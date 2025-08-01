@@ -29,7 +29,7 @@
     <div class="navbar navbar-inverse navbar-fixed-top">
         <div class="navbar-inner">
             <div class="container-fluid">
-                <span class="brand">NASM Assembly Language Tutorials - asmtutor.com</span>
+                <span class="brand">NASM汇编教程 - asm.jamaccao.cn</span>
                 <div class="nav-collapse collapse">
                     <p class="navbar-text pull-right">
                         <a class="navbar-link" href="#top">Top</a>
@@ -89,16 +89,19 @@
             <div class="span9 lessons">
 
                 <div class="hero-unit">
-                    <h2>Learn Assembly Language</h2>
-                    <p>This project was put together to teach myself NASM x86 assembly language on linux.</p>
-                    <p><a href="https://github.com/DGivney/assemblytutorials" class="btn btn-primary btn" target="_blank">Github Project &raquo;</a></p>
+                    <h2>学习汇编</h2>
+                    <p>原项目是原作者为自学NASM而设立的，本项目是译者为自学NASM而翻译的。</p>
+                    <p><a href="https://github.com/DGivney/assemblytutorials" class="btn btn-primary btn" target="_blank">原项目的Github</a></p>
+                    <p><a href="https://github.com/lanshuye123/assemblytutorials_CN" class="btn btn-primary btn" target="_blank">翻译版的Github</a></p>
                 </div>
 
                 <div class="row-fluid hidden-phone">
                     <div class="span4">
                         <h2>Lesson 1</h2>
                         <h5>The obligatory 'Hello, world!'</h5>
+                        <h5>经典的 'Hello, world!'</h5>
                         <p>Introduction to the Linux System Call Table.  In this lesson we use software interrupts to request system functions from the kernel in order to print out 'Hello World!' to the console.</p>
+                        <p>对Linux系统调用的引入。本课程中我们将使用软件中断(软中断)来请求Linux内核打印'Hello Word!'到控制台。</p>
                         <p><a class="btn" href="#lesson1">View lesson &raquo;</a></p>
                     </div>
                     <div class="span4">
@@ -356,25 +359,37 @@
                         </header>
 
                             <h5>First, some background</h5>
+                            <h5>一些背景知识</h5>
 
                             <p>Assembly language is bare-bones. The only interface a programmer has above the actual hardware is the kernel itself. In order to build useful programs in assembly we need to use the linux system calls provided by the kernel. These system calls are a library built into the operating system to provide functions such as reading input from a keyboard and writing output to the screen.</p>
+                            <p>汇编语言是裸机编程语言。汇编程序员所接触的除了硬件就是内核。通过使用Linux内核提供的系统调用，我们可以用汇编构建各种有用的程序。系统调用被设计成了操作系统提供的一些功能，例如从键盘中读取输入或者输出到屏幕。</p>
 
                             <p>When you invoke a system call the kernel will immediately suspend execution of your program.  It will then contact the necessary drivers needed to perform the task you requested on the hardware and then return control back to your program.</p>
+                            <p>当你触发系统调用时，内核将立即暂停你的程序的执行。接着内核会调用必要的驱动以在硬件层面执行你所请求的任务，接着将控制权返回给你的程序。</p>
 
                             <p>
                                 <span class="label label-info">Note:</span>
                                 Drivers are called <i>drivers</i> because the kernel literally uses them to drive the hardware.
                             </p>
+                            <p>
+                                <span class="label label-info">注意:</span>
+                                驱动(Drivers) 之所以被叫做<i>drivers</i> 是因为内核字面上地使用它们来“驱动”硬件设备。
+                            </p>
 
                             <p>We can accomplish this all in assembly by loading EAX with the function number (operation code OPCODE) we want to execute and filling the remaining registers with the arguments we want to pass to the system call. A software interrupt is requested with the INT instruction and the kernel takes over and calls the function from the library with our arguments. Simple.</p>
+                            <p>我们通过将想要执行的系统调用编号(操作数OPCODE)写入EAX寄存器并将其他要传递给系统调用的参数传入其余寄存器以在汇编中执行系统调用。软中断是由INT命令触发的，紧接着内核就会接管程序并以我们传递的参数调用相应的系统调用。</p>
 
                             <p>For example requesting an interrupt when EAX=1 will call sys_exit and requesting an interrupt when EAX=4 will call sys_write instead. EBX, ECX & EDX will be passed as arguments if the function requires them. <a href="https://chromium.googlesource.com/chromiumos/docs/+/HEAD/constants/syscalls.md#x86-32_bit" target="_blank">Click here to view an example of a Linux System Call Table and its corresponding OPCODES.</a></p>
+                            <p>举例来说，请求sys_exit(程序退出)需要将EAX设置为1再触发中断；请求sys_write(写入)需要将EAX设置为4。<a href="https://chromium.googlesource.com/chromiumos/docs/+/HEAD/constants/syscalls.md#x86-32_bit" target="_blank">这个链接指向了一份Linux系统调用表</a></p>
 
                             <h5>Writing our program</h5>
+                            <h5>写程序</h5>
 
                             <p>Firstly we create a variable 'msg' in our .data section and assign it the string we want to output in this case 'Hello, world!'. In our .text section we tell the kernel where to begin execution by providing it with a global label _start: to denote the programs entry point.</p>
+                            <p>首先我们在data段创建了变量msg并指定其为'Hello World!'。我们在text段我们通过global标签告诉内核_start是程序的入口点。</p>
 
                             <p>We will be using the system call sys_write to output our message to the console window.  This function is assigned OPCODE 4 in the Linux System Call Table.  The function also takes 3 arguments which are sequentially loaded into EDX, ECX and EBX before requesting a software interrupt which will perform the task.</p>
+                            <p>我们将使用sys_write来输出文本到控制台窗口。sys_write在x86架构的Linux系统调用表中是4号。此外，在触发系统调用之前，我们需要将其他三个参数写入EDX,ECX和EBX.</p>
 
                             <p>The arguments passed are as follows:
                                 <ul>
@@ -385,28 +400,40 @@
                                 The datatype and meaning of the arguments passed can be found in the function's definition.
                             </p>
 
+                            <p>参数如下:
+                                <ul>
+                                    <li> EDX 存入字符串长度</li>
+                                    <li> ECX 存入.data段字符串变量的地址</li>
+                                    <li> EBX 存入写入文件句柄，传入1意味着写入到标准输出(STDOUT)</li>
+                                </ul>
+                                具体的数据类型和参数含义可以在函数定义里面找。
+                                （译者注:man 2 write可以查看sys_write调用的具体内容）
+                            </p>
+
                             <p>We compile, link and run the program using the commands below.</p>
+                            <p>通过如下的命令编译、链接和运行我们的程序。</p>
 
                         <div class="snippet">
                             <span class="filename">helloworld.asm</span>
                             <pre class="brush: asm;">
                             ; Hello World Program - asmtutor.com
-                            ; Compile with: nasm -f elf helloworld.asm
-                            ; Link with (64 bit systems require elf_i386 option): ld -m elf_i386 helloworld.o -o helloworld
-                            ; Run with: ./helloworld
+                            ; 编译: nasm -f elf helloworld.asm
+                            ; 链接 (64位系统需要指定elf_i386): ld -m elf_i386 helloworld.o -o helloworld
+                            ; 运行: ./helloworld
 
                             SECTION .data
-                            msg     db      'Hello World!', 0Ah     ; assign msg variable with your message string
+                            msg     db      'Hello World!', 0Ah     ; 声明msg变量来储存字符串
 
                             SECTION .text
                             global  _start
 
                             _start:
 
-                                mov     edx, 13     ; number of bytes to write - one for each letter plus 0Ah (line feed character)
-                                mov     ecx, msg    ; move the memory address of our message string into ecx
-                                mov     ebx, 1      ; write to the STDOUT file
+                                mov     edx, 13     ; 要写入的字节数，每个字母加上0Ah(换行符)
+                                mov     ecx, msg    ; 将要写入的内容的地址传递到ECX
+                                mov     ebx, 1      ; 写入到STDOUT
                                 mov     eax, 4      ; invoke SYS_WRITE (kernel opcode 4)
+                                mov     eax, 4      ; 将SYS_WRITE的系统调用编号写入EAX
                                 int     80h
                             </pre>
                             <div class="output">
@@ -435,21 +462,29 @@
                         <header>
                             <h2>Lesson 2</h2>
                             <h4>Proper program exit</h4>
+                            <h4>正确的程序退出</h4>
                         </header>
 
                         <h5>Some more background</h5>
+                        <h5>更多的背景知识</h5>
 
                         <p>After successfully learning how to execute a system call in Lesson 1 we now need to learn about one of the most important system calls in the kernel, sys_exit.</p>
+                        <p>在第一课学完如何执行系统调用后，我们将学习最重要的系统调用之一——sys_exit</p>
 
                         <p>Notice how after our 'Hello, world!' program ran we got a Segmentation fault? Well, computer programs can be thought of as a long strip of instructions that are loaded into memory and divided up into sections (or segments). This general pool of memory is shared between all programs and can be used to store variables, instructions, other programs or anything really. Each segment is given an address so that information stored in that section can be found later.</p>
+                        <p>我们的HelloWorld程序运行完之后会触发Segmentation fault(段错误)。计算机程序可以理解为加载到内存中的一系列的指令并且被分为了若干段。内存池被全部的程序共享，用以储存变量、指令以及其他各种东西。每一个段都有着段地址，所以段中储存的信息可以被找到（寻址）。</p>
 
                         <p>To execute a program that is loaded in memory, we use the global label _start: to tell the operating system where in memory our program can be found and executed.  Memory is then accessed sequentially following the program logic which determines the next address to be accessed. The kernel jumps to that address in memory and executes it.</p>
+                        <p>为了执行加载到内存中的程序，我们使用了global _start告诉操作系统我们的程序从哪里开始执行。接着会访问内存，并按照程序逻辑依次确定接下来要访问的地址。内核会调转到相应的地址并将其执行。</p>
 
                         <p>It's important to tell the operating system exactly where it should begin execution and where it should stop. In Lesson 1 we didn't tell the kernel where to stop execution. So, after we called sys_write the program continued sequentially executing the next address in memory, which could have been anything. We don't know what the kernel tried to execute but it caused it to choke and terminate the process for us instead - leaving us the error message of 'Segmentation fault'.  Calling sys_exit at the end of all our programs will mean the kernel knows exactly when to terminate the process and return memory back to the general pool thus avoiding an error.</p>
+                        <p>很重要的一件事是告诉操作系统我们的程序从什么地方执行、从什么地方结束。在第1课中我们没有告诉内核何时停止执行。因此，在我们的程序中，调用sys_write之后会紧接着执行内存中紧随其后的地址，可能存放着各种东西。我们不知道内核尝试执行了什么，但是这引发了问题并且导致我们的程序被终止，报错是Segmentation fault。在程序末尾执行sys_exit可以精确地告诉内核什么时候结束我们的程序并且将我们程序所占用的内存返回给内存池，以此避免触发错误。</p>
 
                         <h5>Writing our program</h5>
+                        <h5>写程序</h5>
 
                         <p>Sys_exit has a simple function definition.  In the Linux System Call Table it is allocated OPCODE 1 and is passed a single argument through EBX.</p>
+                        <p>sys_exit是非常简单的一个系统调用。在x86 Linux系统调用表中编号为1,只需要向EBX传入一个数字作为程序退出的状态。（译者注：相当于C语言main函数的返回值）</p>
 
                         <p>In order to execute this function all we need to do is:
                             <ul>
@@ -458,12 +493,24 @@
                                 <li>Then request an interrupt on libc using INT 80h.</li>
                             </ul>
                         </p>
+                        <p>为了执行这个函数，我们要做的事情如下:
+                            <ul>
+                                <li>将EBX设置为0,意味着程序没问题.</li>
+                                <li>将EAX设置为1,以调用sys_exit</li>
+                                <li>通过INT 80h调用C标准库调用</li>
+                            </ul>
+                        </p>
 
                         <p>We then compile, link and run it again.</p>
+                        <p>我们再次编译、链接和运行。</p>
 
                         <p>
                             <span class="label label-info">Note:</span>
                             Only new code added in each lesson will be commented.
+                        </p>
+                        <p>
+                            <span class="label label-info">注意:</span>
+                            只注释了新增的代码
                         </p>
 
                         <div class="snippet">
