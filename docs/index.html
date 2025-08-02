@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>NASM Assembly Language Tutorials - asmtutor.com</title>
+    <title>NASM汇编教程中文翻译版 - asm.jamaccao.cn</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
@@ -17,11 +17,6 @@
     <link href="./assets/syntax-highlighter/styles/shCoreDefault.css" rel="stylesheet">
 
     <script type="text/javascript">SyntaxHighlighter.all();</script>
-
-    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
-    <!--[if lt IE 9]>
-      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
 </head>
 
 <body>
@@ -559,21 +554,29 @@
                         <header>
                             <h2>Lesson 3</h2>
                             <h4>Calculate string length</h4>
+                            <h4>计算字符串长度</h4>
                         </header>
 
                         <h5>Firstly, some background</h5>
+                        <h5>一些背景知识</h5>
 
                         <p>Why do we need to calculate the length of a string?</p>
+                        <p>计算字符长长度的必要性：</p>
 
                         <p>Well sys_write requires that we pass it a pointer to the string we want to output in memory and the length in bytes we want to print out.  If we were to modify our message string we would have to update the length in bytes that we pass to sys_write as well, otherwise it will not print correctly. </p>
+                        <p>sys_write系统调用需要传入我们想要输出的字符串指针以及输出长度。如果我们想要修改输出的字符串，就得相应地修改输出长度，否则会出问题。</p>
 
                         <p>You can see what I mean using the program in Lesson 2.  Modify the message string to say 'Hello, brave new world!' then compile, link and run the new program.  The output will be 'Hello, brave ' (the first 13 characters) because we are still only passing 13 bytes to sys_write as its length.  It will be particularly necessary when we want to print out user input.  As we won't know the length of the data when we compile our program, we will need a way to calculate the length at runtime in order to successfully print it out.</p>
+                        <p>举例来说，你把上一课中的程序的字符串修改为“Hello, brave new world!”，接着编译链接运行。它只会输出'Hello, brave '（也就是前13个字符）。这是因为你传递给sys_write的参数是13。此外，计算字符串长度在处理用户输入数据时尤其重要。如果在编译时不知道字符串会有多长，那么就需要有办法来在运行的时候计算字符串的长度。</p>
 
                         <h5>Writing our program</h5>
+                        <h5>写程序</h5>
 
                         <p>To calculate the length of the string we will use a technique called pointer arithmetic.  Two registers are initialised pointing to the same address in memory.  One register (in this case EAX) will be incremented forward one byte for each character in the output string until we reach the end of the string.  The original pointer will then be subtracted from EAX.  This is effectively like subtraction between two arrays and the result yields the number of elements between the two addresses. This result is then passed to sys_write replacing our hard coded count.</p>
+                        <p>为了计算字符串长度，我们需要使用指针的算术运算技术。两个寄存器最初被设置为指向相同的地址。其中一个（本例中是EAX）将会在读取到输出字符串末尾之前逐个递增。接着我们使用这个减去另外一个寄存器中原有的值，差值就是字符串长度。这个方法类似两个数组的减法运算，结果是两个地址之间元素的数量。运算的结果被传递给sys_write代替硬编码的字符串长度。</p>
 
                         <p>The CMP instruction compares the left hand side against the right hand side and sets a number of flags that are used for program flow.  The flag we're checking is the ZF or Zero Flag.  When the byte that EAX points to is equal to zero the ZF flag is set.  We then use the JZ instruction to jump, if the ZF flag is set, to the point in our program labeled 'finished'. This is to break out of the nextchar loop and continue executing the rest of the program.</p>
+                        <p>CMP指令比较两个传入数据，并为程序流设置一个ZF标记。在本例中，当EAX指向的地址存入的数据为0时，会设置ZF标记。我们使用JZ命令在有ZF标记时跳转到finished标签。这将打破原有的nextchar无条件循环。</p>
 
                         <div class="snippet">
                             <span class="filename">helloworld-len.asm</span>
@@ -584,31 +587,31 @@
                             ; Run with: ./helloworld-len
 
                             SECTION .data
-                            msg     db      'Hello, brave new world!', 0Ah ; we can modify this now without having to update anywhere else in the program
+                            msg     db      'Hello, brave new world!', 0Ah ; 可以任意修改msg,而且不用修改其他位置。
 
                             SECTION .text
                             global  _start
 
                             _start:
 
-                                mov     ebx, msg        ; move the address of our message string into EBX
-                                mov     eax, ebx        ; move the address in EBX into EAX as well (Both now point to the same segment in memory)
+                                mov     ebx, msg        ; 将msg的地址传入ebx
+                                mov     eax, ebx        ; 将ebx的内容传入eax。
 
                             nextchar:
-                                cmp     byte [eax], 0   ; compare the byte pointed to by EAX at this address against zero (Zero is an end of string delimiter)
-                                jz      finished        ; jump (if the zero flagged has been set) to the point in the code labeled 'finished'
-                                inc     eax             ; increment the address in EAX by one byte (if the zero flagged has NOT been set)
-                                jmp     nextchar        ; jump to the point in the code labeled 'nextchar'
+                                cmp     byte [eax], 0   ; 将eax所指向的内存地址的内容与字符串结束符0做比较
+                                jz      finished        ; 如果相等上一行，ZF标记会激活jz跳转，执行finished标签之后的命令。
+                                inc     eax             ; 如果没能跳转，那么eax自增。
+                                jmp     nextchar        ; 回到nextchar语句开头处
 
                             finished:
-                                sub     eax, ebx        ; subtract the address in EBX from the address in EAX
-                                                        ; remember both registers started pointing to the same address (see line 15)
-                                                        ; but EAX has been incremented one byte for each character in the message string
-                                                        ; when you subtract one memory address from another of the same type
-                                                        ; the result is number of segments between them - in this case the number of bytes
+                                sub     eax, ebx        ; EAX减去EBX
+                                                        ; 在开始的时候，两个寄存器的值是相同的（参见第15行）
+                                                        ; 但是EAX随着字符串中每个字符递增
+                                                        ; 当你使用同类型的内存地址相减时
+                                                        ; 算出来的结果是两地址之间的个数差，本例中是文本长度
 
-                                mov     edx, eax        ; EAX now equals the number of bytes in our string
-                                mov     ecx, msg        ; the rest of the code should be familiar now
+                                mov     edx, eax        ; EAX 现在等于字符串长度
+                                mov     ecx, msg        ; 此后的代码不需要额外解释
                                 mov     ebx, 1
                                 mov     eax, 4
                                 int     80h
@@ -637,25 +640,35 @@
                         <header>
                             <h2>Lesson 4</h2>
                             <h4>Subroutines</h4>
+                            <h4>子程序</h4>
                         </header>
 
                         <h5>Introduction to subroutines</h5>
+                        <h5>对子程序的介绍</h5>
 
                         <p>Subroutines are functions.  They are reusable pieces of code that can be called by your program to perform various repeatable tasks.  Subroutines are declared using labels just like we've used before (eg. _start:) however we don't use the JMP instruction to get to them - instead we use a new instruction <span class="instruction-name">CALL</span>. We also don't use the JMP instruction to return to our program after we have run the function.  To return to our program from a subroutine we use the instruction RET instead.</p>
+                        <p>子程序是由可复用的执行各种重复功能的函数构成的。子程序依旧通过此前我们使用的标签来声明。但是这次不使用JMP命令来调用子程序，我们将使用新指令 <span class="instruction-name">CALL</span>.此外，我们也不使用JMP从子程序跳转回主程序，而是使用RET指令。</p>
 
                         <h5>Why don't we JMP to subroutines?</h5>
+                        <h5>为什么不用JMP来调用子程序？</h5>
 
                         <p>The great thing about writing a subroutine is that we can reuse it.  If we want to be able to use the subroutine from anywhere in the code we would have to write some logic to determine where in the code we had jumped from and where we should jump back to.  This would litter our code with unwanted labels.  If we use <span class="instruction-name">CALL</span> and RET however, assembly handles this problem for us using something called the stack.</p>
+                        <p>子程序的强大之处在于可复用性。如果我们想在代码的任意地方调用我们的子程序，我们应该写一些额外的代码来记录我们从什么地方跳转的、应该回到哪里。这些将会让我们的代码被若干非预期的标签所污染。如果我们使用 <span class="instruction-name">CALL</span> 和 RET 指令, 汇编将使用栈来自动处理这些问题。</p>
 
                         <h5>Introduction to the stack</h5>
+                        <h5>对栈的简要介绍</h5>
 
                         <p>The stack is a special type of memory.  It's the same type of memory that we've used before however it's special in how it is used by our program.  The stack is what is call <strong>Last In First Out</strong> memory (LIFO).  You can think of the stack like a stack of plates in your kitchen.  The last plate you put on the stack is also the first plate you will take off the stack next time you use a plate.</p>
+                        <p>栈是特殊的内存空间。从底层上讲，栈和一般的内存空间也没别的区别。栈特殊在我们的程序以<strong>后进先出</strong>(LIFO)的原则来使用。你可以理解栈为厨房里一系列叠起来的盘子，你最后放的那个盘子是下次取出来的第一个盘子。</p>
 
                         <p>The stack in assembly is not storing plates though, its storing values.  You can store a lot of things on the stack such as variables, addresses or other programs.  We need to use the stack when we call subroutines to temporarily store values that will be restored later.</p>
+                        <p>不过汇编里面的栈储存的东西是值。你可以用栈储存变量、地址甚至是其他程序。我们接下来使用栈来储存调用子程序时需要用到的东西。</p>
 
                         <p>Any register that your function needs to use should have it's current value put on the stack for safe keeping using the PUSH instruction.  Then after the function has finished it's logic, these registers can have their original values restored using the POP instruction.  This means that any values in the registers will be the same before and after you've called your function.  If we take care of this in our subroutine we can call functions without worrying about what changes they're making to our registers.</p>
+                        <p>函数用到的任何寄存器都应该先使用PUSH指令将现在的值安全地存入到栈中。接下来函数可以完成它自己的任务，最后再通过POP指令读取栈中储存的数据到各个寄存器中。这意味着调用函数前后各个寄存器中的值都保持不变。如果我们看重这一点，那我们就可以调用子程序，而不用担心子程序破坏了我们原有的寄存器数据情况。</p>
 
                         <p>The <span class="instruction-name">CALL</span> and RET instructions also use the stack.  When you <span class="instruction-name">CALL</span> a subroutine, the address you called it from in your program is pushed onto the stack.  This address is then popped off the stack by RET and the program jumps back to that place in your code.  This is why you should always JMP to labels but you should <span class="instruction-name">CALL</span> functions.</p>
+                        <p><span class="instruction-name">CALL</span> 和 RET 指令也使用了栈。当你<span class="instruction-name">CALL</span>一个子程序时，你现在的地址将会入栈。当执行RET指令时，这个地址将会出栈并调转到你程序原有的位置。这也是为什么要通过<span class="instruction-name">CALL</span>来调用子程序的原因。</p>
 
                         <div class="snippet">
                             <span class="filename">helloworld-len.asm</span>
@@ -673,11 +686,11 @@
 
                             _start:
 
-                                mov     eax, msg        ; move the address of our message string into EAX
-                                call    strlen          ; call our function to calculate the length of the string
+                                mov     eax, msg        ; 将要输出的字符串的地址写入EAX
+                                call    strlen          ; 调用我们编写好的字符串长度函数
 
-                                mov     edx, eax        ; our function leaves the result in EAX
-                                mov     ecx, msg        ; this is all the same as before
+                                mov     edx, eax        ; 我们的函数使用EAX来保存字符串长度的结果
+                                mov     ecx, msg        ; 剩下的就和之前类似了
                                 mov     ebx, 1
                                 mov     eax, 4
                                 int     80h
@@ -686,11 +699,11 @@
                                 mov     eax, 1
                                 int     80h
 
-                            strlen:                     ; this is our first function declaration
-                                push    ebx             ; push the value in EBX onto the stack to preserve it while we use EBX in this function
-                                mov     ebx, eax        ; move the address in EAX into EBX (Both point to the same segment in memory)
+                            strlen:                     ; 这个是我们的字符串长度函数的声明
+                                push    ebx             ; 将EBX的值入栈，以此来保护EBX中原有的值。
+                                mov     ebx, eax        ; 将EBX的值赋值为EAX
 
-                            nextchar:                   ; this is the same as lesson3
+                            nextchar:                   ; 下文就和第三课内容类似了
                                 cmp     byte [eax], 0
                                 jz      finished
                                 inc     eax
@@ -698,8 +711,8 @@
 
                             finished:
                                 sub     eax, ebx
-                                pop     ebx             ; pop the value on the stack back into EBX
-                                ret                     ; return to where the function was called
+                                pop     ebx             ; 将刚才存入栈的EBX的内容出栈回EBX
+                                ret                     ; 通过RET语句回到调用函数的地方
                             </pre>
                             <div class="output">
                                 <div class="inner">
@@ -3706,24 +3719,13 @@
 
         <footer>
             <p>Learn assembly language at <a href="https://asmtutor.com">https://asmtutor.com</a></p>
+            <p>中文翻译版 <a href="https://asm.jamaccao.cn">https://asm.jamaccao.cn</a></p>
         </footer>
 
     </div>
 
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
     <script src="./assets/bootstrap/js/bootstrap.min.js"></script>
     <script src="./assets/script.js"></script>
-
-    <script>
-      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-      ga('create', 'UA-41213327-1', 'asmtutor.com');
-      ga('send', 'pageview');
-
-    </script>
 
   </body>
 </html>
