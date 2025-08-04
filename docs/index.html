@@ -101,13 +101,17 @@
                     <div class="span4">
                         <h2>Lesson 2</h2>
                         <h5>Proper program exit</h5>
+                        <h4>正确的程序退出</h4>
                         <p>A very brief lesson about memory addresses, sequential code execution and how to properly terminate a program without errors.</p>
+                        <p>关于内存地址简要的介绍，指出了如何没有错误地终止程序。</p>
                         <p><a class="btn" href="#lesson2">View details &raquo;</a></p>
                     </div>
                     <div class="span4">
                         <h2>Lesson 3</h2>
                         <h5>Calculate string length</h5>
+                        <h5>计算字符串长度</h5>
                         <p>What if we wanted to output something that we don't know the length of? Like user input? Learn about loops, labels and pointer arithmic.</p>
+                        <p>我们该如何输出一个像是用户输入这样的不知道长度的字符串? 本课介绍循环、标签和指针算术运算。</p>
                         <p><a class="btn" href="#lesson3">View details &raquo;</a></p>
                     </div>
                 </div>
@@ -116,13 +120,17 @@
                     <div class="span4">
                         <h2>Lesson 4</h2>
                         <h5>Subroutines</h5>
+                        <h5>子程序</h5>
                         <p>Introduction to the stack and how to write clean, reusable code in assembly.</p>
+                        <p>关于栈的介绍、以及如何在汇编中写出清晰且具有可复用性的代码</p>
                         <p><a class="btn" href="#lesson4">View lesson &raquo;</a></p>
                     </div>
                     <div class="span4">
                         <h2>Lesson 5</h2>
                         <h5>External include files</h5>
+                        <h5>包含外部文件</h5>
                         <p>To further simplify our code we can move our subroutines into an external include file.</p>
+                        <p>为了化简我们的代码，我们可以将一些子程序移动带外部文件中。</p>
                         <p><a class="btn" href="#lesson5">View details &raquo;</a></p>
                     </div>
                     <div class="span4">
@@ -1207,6 +1215,7 @@
                         </p>
 
                         <p>When sys_read detects a linefeed, control returns to the program and the users input is located at the memory address you passed in ECX.</p>
+                        <p>当sys_read读取到换行符时，程序的控制权将返回你的程序，同时用户输入被储存到ECX中。</p>
 
                         <div class="snippet">
                             <span class="filename">helloworld-input.asm</span>
@@ -1219,11 +1228,11 @@
                             %include        'functions.asm'
 
                             SECTION .data
-                            msg1        db      'Please enter your name: ', 0h      ; message string asking user for input
-                            msg2        db      'Hello, ', 0h                       ; message string to use after user has entered their name
+                            msg1        db      'Please enter your name: ', 0h      ; 要求用户输入名称
+                            msg2        db      'Hello, ', 0h                       ; 在用户输入完名称后输出你好
 
                             SECTION .bss
-                            sinput:     resb    255                                 ; reserve a 255 byte space in memory for the users input string
+                            sinput:     resb    255                                 ; 为用户输入保留255字节来储存
 
                             SECTION .text
                             global  _start
@@ -1233,17 +1242,17 @@
                                 mov     eax, msg1
                                 call    sprint
 
-                                mov     edx, 255        ; number of bytes to read
-                                mov     ecx, sinput     ; reserved space to store our input (known as a buffer)
-                                mov     ebx, 0          ; read from the STDIN file
-                                mov     eax, 3          ; invoke SYS_READ (kernel opcode 3)
+                                mov     edx, 255        ; 最多读取的字节数
+                                mov     ecx, sinput     ; 储存用户输入的缓冲区位置
+                                mov     ebx, 0          ; 从STDIN(0)中读取
+                                mov     eax, 3          ; 向EAX填入sys_read的系统调用编号
                                 int     80h
 
                                 mov     eax, msg2
                                 call    sprint
 
-                                mov     eax, sinput     ; move our buffer into eax (Note: input contains a linefeed)
-                                call    sprint          ; call our print function
+                                mov     eax, sinput     ; 将用户输入缓冲区输出。注意：最后的换行符也被存入了缓冲区
+                                call    sprint          ; 调用原来的输出函数
 
                                 call    quit
                             </pre>
@@ -1268,17 +1277,23 @@
                         <header>
                             <h2>Lesson 10</h2>
                             <h4>Count to 10</h4>
+                            <h4>数到10</h4>
                         </header>
 
                         <h5>Firstly, some background</h5>
+                        <h5>一些背景信息</h5>
 
                         <p>Counting by numbers is not as straight forward as you would think in assembly.  Firstly we need to pass sys_write an address in memory so we can't just load our register with a number and call our print function.  Secondly, numbers and strings are very different things in assembly.  Strings are represented by what are called ASCII values.  ASCII stands for <strong>American Standard Code for Information Interchange</strong>.  A good reference for ASCII <a href="http://www.asciitable.com/">can be found here</a>. ASCII was created as a way to standardise the representation of strings across all computers.</p>
+                        <p>在汇编中数数并不直接。首先，我们需要向sys_write传递的是地址，因此不能只向寄存器存入数字就调用输出函数。其次，数字和字符串在汇编中是截然不同的两种事物。字符串通过ASCII码来编码。ASCII全称<strong>American Standard Code for Information Interchange</strong>. 可以前往<a href="http://www.asciitable.com/">这个网站</a>参考。 </p>
 
                         <p>Remember, we can't print a number - we have to print a string. In order to count to 10 we will need to convert our numbers from standard integers to their ASCII string representations.  Have a look at the ASCII values table and notice that the string representation for the number '1' is actually '49' in ASCII. In fact, adding 48 to our numbers is all we have to do to convert them from integers to their ASCII string representations.</p>
+                        <p>注意！我们不能输出(print)一个数字，我们只能够输出字符串。为了数到10,我们需要将数字转换成ASCII码编码的字符串。查阅ASCII码表可知，数字转换成相应的字符串只需要加48，比如'1'对应ASCII码的49号。</p>
 
                         <h5>Writing our program</h5>
+                        <h5>写程序</h5>
 
                         <p>What we will do with our program is count from 1 to 10 using the ECX register.  We will then add 48 to our counter to convert it from a number to it's ASCII string representation.  We will then push this value to the stack and call our print function passing ESP as the memory address to print from.  Once we have finished counting to 10 we will exit our counting loop and call our quit function.</p>
+                        <p>我们的程序将使用ECX寄存器储存1到10的数字。接着我们将数字加48以转换为ASCII编码的字符串。接着我们将这个值入栈再通过给打印函数传递ESP寄存器来将这个字符输出。一旦我们成功数到10了，就结束循环并退出程序。</p>
 
                         <div class="snippet">
                             <span class="filename">helloworld-10.asm</span>
@@ -1295,20 +1310,20 @@
 
                             _start:
 
-                                mov     ecx, 0          ; ecx is initalised to zero.
+                                mov     ecx, 0          ; ECX被初始化为0
 
                             nextNumber:
-                                inc     ecx             ; increment ecx
+                                inc     ecx             ; ECX自增
 
-                                mov     eax, ecx        ; move the address of our integer into eax
-                                add     eax, 48         ; add 48 to our number to convert from integer to ascii for printing
-                                push    eax             ; push eax to the stack
-                                mov     eax, esp        ; get the address of the character on the stack
-                                call    sprintLF        ; call our print function
+                                mov     eax, ecx        ; 将要输出的数写入EAX
+                                add     eax, 48         ; 加48转换成相应的ASCII字符
+                                push    eax             ; 入栈
+                                mov     eax, esp        ; 通过ESP获取栈中字符串的地址
+                                call    sprintLF        ; 调用输出函数
 
-                                pop     eax             ; clean up the stack so we don't have unneeded bytes taking up space
-                                cmp     ecx, 10         ; have we reached 10 yet? compare our counter with decimal 10
-                                jne     nextNumber      ; jump if not equal and keep counting
+                                pop     eax             ; 将栈中用于输出的字符弹出
+                                cmp     ecx, 10         ; 判断是否到10
+                                jne     nextNumber      ; jne命令：不相等则跳转
 
                                 call    quit
                             </pre>
@@ -1335,6 +1350,10 @@
                             <span class="label label-important">Error:</span>
                             Our number 10 prints a colon (:) character instead.  What's going on?
                         </p>
+                        <p>
+                            <span class="label label-important">错误:</span>
+                            应该输出10的地方输出了一个冒号。
+                        </p>
 
                     </article>
                 </div>
@@ -1346,35 +1365,48 @@
                         <header>
                             <h2>Lesson 11</h2>
                             <h4>Count to 10 (itoa)</h4>
+                            <h4>通过itoa函数来数到十</h4>
                         </header>
 
                         <p>So why did our program in Lesson 10 print out a colon character instead of the number 10?.  Well lets have a look at our ASCII table.  We can see that the colon character has a ASCII value of 58.  We were adding 48 to our integers to convert them to their ASCII string representations so instead of passing sys_write the value '58' to print ten we actually need to pass the ASCII value for the number 1 followed by the ASCII value for the number 0. Passing sys_write '4948' is the correct string representation for the number '10'. So we can't just simply add 48 to our numbers to convert them, we first have to divide them by 10 because each place value needs to be converted individually.</p>
+                        <p>所以为什么第十课应该输出数字10的地方输出了一个冒号？请参阅ASCII码表，ASCII值为58的地方是冒号。当我们让10加上48时，得到的是58.所以为了输出一个10,我们应该输出1再输出0。也就是向sys_write传递49 48.因此我们不能简单的给数字加48来完成转换，我们首先应该按各个位将数字分离因为每位的数字都应该单独转换。</p>
 
                         <p>We will write 2 new subroutines in this lesson 'iprint' and 'iprintLF'.  These functions will be used when we want to print ASCII string representations of numbers.  We achieve this by passing the number in EAX.  We then initialise a counter in ECX.  We will repeatedly divide the number by 10 and each time convert the remainder to a string by adding 48.  We will then push this onto the stack for later use. Once we can no longer divide the number by 10 we will enter our second loop.  In this print loop we will print the now converted string representations from the stack and pop them off.  Popping them off the stack moves ESP forward to the next item on the stack. Each time we print a value we will decrease our counter ECX.  Once all numbers have been converted and printed we will return to our program.</p>
+                        <p>在本课程中，我们将编写两个新的子程序'iprint'和'iprintLF'。这两个函数将用于输出代表传递到EAX寄存器中的数字的ASCII字符串。我们初始化ECX寄存器，重复地用数字去除10,将余数加上48转换为字符入栈待稍后使用，当我们剩下的数字不够除10,我们便进入第二个循环——将栈中的数字打印并弹出。弹出的操作意味着ESP也会前移一项，我们每次输出一个值也会减少ECX的一个值。当所有的数字都被转换和输出之后，我们返回到程序中。</p>
 
                         <h5>How does the divide instruction work?</h5>
+                        <h5>除法指令是如何工作的。</h5>
 
                         <p>The DIV and IDIV instructions work by dividing whatever is in EAX by the value passed to the instruction.  The quotient part of the value is left in EAX and the remainder part is put into EDX (Originally called the data register).
+                        DIV和IDIV指令使用EAX来除传入的值，商被存入EAX而余数被存入EDX。这也是EDX得名数据寄存器的原因。（译者注：DIV、IDIV的操作数只能为寄存器，不能传入立即数）
 
                         <p>For example.</p>
-
+                        <p>举例来说</p>
+    
                         <div class="snippet">
                             <span class="filename">IDIV instruction example</span>
                             <pre class="brush: asm;">
-                            mov     eax, 10         ; move 10 into eax
-                            mov     esi, 10         ; move 10 into esi
-                            idiv    esi             ; divide eax by esi (eax will equal 1 and edx will equal 0)
-                            idiv    esi             ; divide eax by esi again (eax will equal 0 and edx will equal 1)
+                            mov     eax, 10         ; EAX = 10
+                            mov     esi, 10         ; ESI = 10
+                            idiv    esi             ; 使用EAX除ESI(10)，现在EAX=1,EDX=0
+                            idiv    esi             ; 使用EAX除ESI(10)，现在EAX=0,EDX=1
                             </pre>
                         </div>
 
                         <h5>If we are only storing the remainder won't we have problems?</h5>
+                        <h5>如果只储存余数是否会发生问题？</h5>
 
                         <p>No, because these are integers, when you divide a number by an even bigger number the quotient in EAX is 0 and the remainder is the number itself. This is because the number divides zero times leaving the original value as the remainder in EDX. How good is that?</p>
+                        <p>一般不会，因为你使用某个数去除更大的数，EAX会变为0而EDX会变成原来的被除数。这不挺好的吗？(译者注:译者未能理解这段话在讲什么，大意应该是只将EDX入栈不用担心EAX的值会影响程序逻辑)</p>
+                        
 
                         <p>
                             <span class="label label-info">Note:</span>
                             Only the new functions iprint and iprintLF have comments.
+                        </p>
+                        <p>
+                            <span class="label label-info">注意:</span>
+                            只有新的函数iprint和iprintLF有注释。
                         </p>
 
                         <div class="snippet">
@@ -1382,52 +1414,52 @@
                             <pre class="brush: asm;">
                             ;------------------------------------------
                             ; void iprint(Integer number)
-                            ; Integer printing function (itoa)
+                            ; 通过整数转换为字符的方式来打印数字
                             iprint:
-                                push    eax             ; preserve eax on the stack to be restored after function runs
-                                push    ecx             ; preserve ecx on the stack to be restored after function runs
-                                push    edx             ; preserve edx on the stack to be restored after function runs
-                                push    esi             ; preserve esi on the stack to be restored after function runs
-                                mov     ecx, 0          ; counter of how many bytes we need to print in the end
+                                push    eax             ; 保护EAX、ECX、EDX、ESI
+                                push    ecx
+                                push    edx
+                                push    esi
+                                mov     ecx, 0          ; ECX是记录要输出字符数的寄存器
 
                             divideLoop:
-                                inc     ecx             ; count each byte to print - number of characters
-                                mov     edx, 0          ; empty edx
-                                mov     esi, 10         ; mov 10 into esi
-                                idiv    esi             ; divide eax by esi
-                                add     edx, 48         ; convert edx to it's ascii representation - edx holds the remainder after a divide instruction
-                                push    edx             ; push edx (string representation of an intger) onto the stack
-                                cmp     eax, 0          ; can the integer be divided anymore?
-                                jnz     divideLoop      ; jump if not zero to the label divideLoop
+                                inc     ecx             ; ECX自增来统计要输出的字符数
+                                mov     edx, 0          ; 每次是哟之前清空EDX
+                                mov     esi, 10         ; 设置ESI为10
+                                idiv    esi             ; 使用EAX除去ESI
+                                add     edx, 48         ; 将除10的余数加48转换为相应的ASCII字符
+                                push    edx             ; 将转换为字符的值入栈
+                                cmp     eax, 0          ; 将EAX同0比较判断是否除净
+                                jnz     divideLoop      ; JNZ是非零情况跳转，也就是未除净继续循环。
 
                             printLoop:
-                                dec     ecx             ; count down each byte that we put on the stack
-                                mov     eax, esp        ; mov the stack pointer into eax for printing
-                                call    sprint          ; call our string print function
-                                pop     eax             ; remove last character from the stack to move esp forward
-                                cmp     ecx, 0          ; have we printed all bytes we pushed onto the stack?
-                                jnz     printLoop       ; jump is not zero to the label printLoop
+                                dec     ecx             ; ECX递减
+                                mov     eax, esp        ; 将esp传入eax以输出栈里面存放的字符
+                                call    sprint          ; 调用字符串输出函数
+                                pop     eax             ; 将最后一个字符弹出，esp前移
+                                cmp     ecx, 0          ; 比较是否输出完全部的字符
+                                jnz     printLoop       ; 如果没有，就继续
 
-                                pop     esi             ; restore esi from the value we pushed onto the stack at the start
-                                pop     edx             ; restore edx from the value we pushed onto the stack at the start
-                                pop     ecx             ; restore ecx from the value we pushed onto the stack at the start
-                                pop     eax             ; restore eax from the value we pushed onto the stack at the start
+                                pop     esi             ; 恢复ESI、EDX、ECX、EAX在使用之前的值
+                                pop     edx
+                                pop     ecx
+                                pop     eax
                                 ret
 
 
                             ;------------------------------------------
                             ; void iprintLF(Integer number)
-                            ; Integer printing function with linefeed (itoa)
+                            ; 有换行符的iprint
                             iprintLF:
-                                call    iprint          ; call our integer printing function
+                                call    iprint          ; 调用以上的iprint函数
 
-                                push    eax             ; push eax onto the stack to preserve it while we use the eax register in this function
-                                mov     eax, 0Ah        ; move 0Ah into eax - 0Ah is the ascii character for a linefeed
-                                push    eax             ; push the linefeed onto the stack so we can get the address
-                                mov     eax, esp        ; move the address of the current stack pointer into eax for sprint
-                                call    sprint          ; call our sprint function
-                                pop     eax             ; remove our linefeed character from the stack
-                                pop     eax             ; restore the original value of eax before our function was called
+                                push    eax             ; 保护EAX
+                                mov     eax, 0Ah        ; 将换行符写入EAX
+                                push    eax             ; 换行符入栈
+                                mov     eax, esp        ; 将esp写入eax,以此来打印栈中换行符
+                                call    sprint          ; 输出换行符
+                                pop     eax             ; 将换行符弹出
+                                pop     eax
                                 ret
 
 
@@ -1523,7 +1555,7 @@
                             nextNumber:
                                 inc     ecx
                                 mov     eax, ecx
-                                call    iprintLF        ; NOTE call our new integer printing function (itoa)
+                                call    iprintLF        ; 现在调用我们的整数输出函数
                                 cmp     ecx, 10
                                 jne     nextNumber
 
@@ -1558,9 +1590,11 @@
                         <header>
                             <h2>Lesson 12</h2>
                             <h4>Calculator - addition</h4>
+                            <h4>计算器 - 加法</h4>
                         </header>
 
                         <p>In this program we will be adding the registers EAX and EBX together and we'll leave our answer in EAX. Firstly we use the MOV instruction to load EAX with an integer (in this case 90).  We then MOV an integer into EBX (in this case 9).  Now all we need to do is use the ADD instruction to perform our addition. EBX & EAX will be added together leaving our answer in the left most register in this instruction (in our case EAX). Then all we need to do is call our integer printing function to complete the program.</p>
+                        <p>在本程序中，我们将EAX和EBX的值加在一起，结果储存到EAX中。首先我们使用MOV指令来为寄存器赋值为90和9.接着我们只需要使用ADD指令即可。最后调用我们的整数输出函数。</p>
 
                         <div class="snippet">
                             <span class="filename">calculator-addition.asm</span>
@@ -1577,10 +1611,10 @@
 
                             _start:
 
-                                mov     eax, 90     ; move our first number into eax
-                                mov     ebx, 9      ; move our second number into ebx
-                                add     eax, ebx    ; add ebx to eax
-                                call    iprintLF    ; call our integer print with linefeed function
+                                mov     eax, 90     ; 为EAX赋值
+                                mov     ebx, 9      ; 为EBX赋值
+                                add     eax, ebx    ; EAX = EAX + EBX
+                                call    iprintLF    ; 调用整数输出函数
 
                                 call    quit
                             </pre>
