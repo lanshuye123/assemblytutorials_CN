@@ -1638,8 +1638,11 @@
                         <header>
                             <h2>Lesson 13</h2>
                             <h4>Calculator - subtraction</h4>
+                            <h4>计算器 - 减法</h4>
                         </header>
                         <p>In this program we will be subtracting the value in the register EBX from the value in the register EAX.  Firstly we load EAX and EBX with integers in the same way as Lesson 12.  The only difference is we will be using the SUB instruction to perform our subtraction logic, leaving our answer in the left most register of this instruction (in our case EAX). Then all we need to do is call our integer printing function to complete the program.</p>
+                        <p>在本程序中，我们将会使用EAX的值减去EBX的值。首先我们参照第12课的方式向EAX和EBX加载数字，仅有的差异就是本课使用SUB指令来执行减法，指令会将结果存在放左侧的EAX寄存器中，接着我们只需要输出就行。</p>
+                        
                         <div class="snippet">
                             <span class="filename">calculator-subtraction.asm</span>
                             <pre class="brush: asm;">
@@ -1655,10 +1658,10 @@
 
                             _start:
 
-                                mov     eax, 90     ; move our first number into eax
-                                mov     ebx, 9      ; move our second number into ebx
-                                sub     eax, ebx    ; subtract ebx from eax
-                                call    iprintLF    ; call our integer print with linefeed function
+                                mov     eax, 90     ; 为EAX赋值
+                                mov     ebx, 9      ; 为EBX赋值
+                                sub     eax, ebx    ; 减法指令
+                                call    iprintLF    ; 输出
 
                                 call    quit
                             </pre>
@@ -1682,9 +1685,11 @@
                         <header>
                             <h2>Lesson 14</h2>
                             <h4>Calculator - multiplication</h4>
+                            <h4>计算器 - 乘法</h4>
                         </header>
 
                         <p>In this program we will be multiplying the value in EBX by the value present in EAX.  Firstly we load EAX and EBX with integers in the same way as Lesson 12.  This time though we will be calling the MUL instruction to perform our multiplication logic.  The MUL instruction is different from many instructions in NASM, in that it only accepts one further argument.  The MUL instruction always multiples EAX by whatever value is passed after it.  The answer is left in EAX.</p>
+                        <p>本程序中，我们将使用EAX寄存器的值乘上EBX寄存器的值。和第12课一样，我们先赋值。这次使用MUL指令来完成乘法操作。注意：MUL与NASM的其他很多指令不同，MUL只接受一个参数，通过使用EAX来乘传入参数，结果储存在EAX中。</p>
 
                         <div class="snippet">
                             <span class="filename">calculator-multiplication.asm</span>
@@ -1701,10 +1706,10 @@
 
                             _start:
 
-                                mov     eax, 90     ; move our first number into eax
-                                mov     ebx, 9      ; move our second number into ebx
-                                mul     ebx         ; multiply eax by ebx
-                                call    iprintLF    ; call our integer print with linefeed function
+                                mov     eax, 90
+                                mov     ebx, 9
+                                mul     ebx         ; EAX = EAX * EBX
+                                call    iprintLF
 
                                 call    quit
                             </pre>
@@ -1728,11 +1733,14 @@
                         <header>
                             <h2>Lesson 15</h2>
                             <h4>Calculator - division</h4>
+                            <h4>计算器 - 除法</h4>
                         </header>
 
                         <p>In this program we will be dividing the value in EBX by the value present in EAX.  We've used division before in our integer print subroutine. Our program requires a few extra strings in order to print out the correct answer but otherwise there's nothing complicated going on.</p>
+                        <p>在本课中，我们将使用EAX的值去除EBX的值。在此前的整数输出函数中，我们已经用过除法指令了。这个程序需要额外的字符串用来表示“余”。</p>
 
                         <p>Firstly we load EAX and EBX with integers in the same way as Lesson 12.  Division logic is performed using the DIV instruction.  The DIV instruction always divides EAX by the value passed after it.  It will leave the quotient part of the answer in EAX and put the remainder part in EDX (the original data register).  We then MOV and call our strings and integers to print out the correct answer.</p>
+                        <p>首先和12课一样，给EAX和EBX赋值。除法指令是DIV，DIV总是使用EAX作为被除数，传入参数作为除数，整除结果保留在EAX中，余数保留在EDX中。接着需要MOV来调用字符串和整数输出函数。</p>
 
                         <div class="snippet">
                             <span class="filename">calculator-division.asm</span>
@@ -1745,21 +1753,21 @@
                             %include        'functions.asm'
 
                             SECTION .data
-                            msg1        db      ' remainder '      ; a message string to correctly output result
+                            msg1        db      ' remainder '      ; 余
 
                             SECTION .text
                             global  _start
 
                             _start:
 
-                                mov     eax, 90     ; move our first number into eax
-                                mov     ebx, 9      ; move our second number into ebx
-                                div     ebx         ; divide eax by ebx
-                                call    iprint      ; call our integer print function on the quotient
-                                mov     eax, msg1   ; move our message string into eax
-                                call    sprint      ; call our string print function
-                                mov     eax, edx    ; move our remainder into eax
-                                call    iprintLF    ; call our integer printing with linefeed function
+                                mov     eax, 90
+                                mov     ebx, 9
+                                div     ebx         ; 新EAX * EBX + 新EDX = 原EAX
+                                call    iprint      ; 调用整数输出函数
+                                mov     eax, msg1   ; 输出一个“余”
+                                call    sprint      ; 调用字符输出函数
+                                mov     eax, edx    ; 将余数EDX转移到EAX以用来输出
+                                call    iprintLF    ; 有换行符的整数输出函数
 
                                 call    quit
                             </pre>
@@ -1783,29 +1791,41 @@
                         <header>
                             <h2>Lesson 16</h2>
                             <h4>Calculator (atoi)</h4>
+                            <h4>基于文本转数字的计算器</h4>
                         </header>
 
                         <p>Our program will take several command line arguments and add them together printing out the result in the terminal.</p>
+                        <p>本程序将从命令行接受若干参数并将它们加到一起，最后将结果输出到终端。</p>
 
                         <h5>Writing our program</h5>
+                        <h5>写程序</h5>
 
                         <p>Our program begins by using the POP instruction to get the number of passed arguments off the stack.  This value is stored in ECX (originally known as the counter register).  It will then POP the next value off the stack containing the program name and remove it from the number of arguments stored in ECX.  It will then loop through the rest of the arguments popping each one off the stack and performing our addition logic. As we know, arguments passed via the command line are received by our program as strings.  Before we can add the arguments together we will need to convert them to integers otherwise our result will not be correct. We do this by calling our Ascii to Integer function (atoi).  This function will convert the ascii value into an integer and place the result in EAX.  We can then add this value to EDX (originally known as the data register) where we will store the result of our additions. If the value passed to atoi is not an ascii representation of an integer our function will return zero instead. When all arguments have been converted and added together we will print out the result and call our quit function.</p>
+                        <p>我们的程序先使用pop指令获取到栈顶的参数个数并储存于ECX寄存器中，接着将程序名弹出并将ECX减去这项。循环将栈中各项弹出并相加。然而，参数是以字符串的形式传递的，在我们将数字相加之前，我们需要有一个函数将字符串转换为数字(atoi)。这个函数将会通过ASCII码将数字转换为数值并储存在EAX，我们将这个数加到EDX中储存求和结果。如果传递进入函数的字符串并不是一个表示数字的字符串，那我们的函数返回0.当所有的参数都被转换求和后，输出总和并结束程序。</p>
 
                         <h5>How does the atoi function work</h5>
+                        <h5>文本转数字函数如何运作？</h5>
 
                         <p>Converting an ascii string into an integer value is not a trivial task.  We know how to convert an integer to an ascii string so the process should essentially work in reverse.  Firstly we take the address of the string and move it into ESI (originally known as the source register). We will then move along the string byte by byte (think of each byte as being a single digit or decimal placeholder).  For each digit we will check if it's value is between 48-57 (ascii values for the digits 0-9).</p>
+                        <p>将文本转换为数字并不是一个容易事，我们知道如何转换一个数字到字符串，这个工作就需要反着来。首先我们获取到字符串的地址，并写入常被叫做源地址寄存器的ESI，接着在认为每个字符是一个单独的数字的情况下逐个移动字符，检查是否在ASCII码代表0到9的48到57的范围内。</p>
 
-                        <p>Once we have performed this check and determined that the byte can be converted to an integer we will perform the following logic.  We will subtract 48 from the value – converting the ascii value to it's decimal equivalent. We will then add this value to EAX (the general purpose register that will store our result). We will then multiple EAX by 10 as each byte represents a decimal placeholder and continue the loop.</p>
+                        <p>Once we have performed this check and determined that the byte can be converted to an integer we will perform the following logic.  We will subtract 48 from the value - converting the ascii value to it's decimal equivalent. We will then add this value to EAX (the general purpose register that will store our result). We will then multiple EAX by 10 as each byte represents a decimal placeholder and continue the loop.</p>
+                        <p>一旦检查通过，我们就可以执行接下来的转换逻辑：我们使用每一个值减去48,将ASCII码转换为相应的数字，加到一般作为结果寄存器的EAX中，接着让EAX乘10进一位继续循环。</p>
 
                         <p>When all bytes have been converted we need to do one last thing before we return the result.  The last digit of any number represents a single unit (not a multiple of 10) so we have multiplied our result one too many times.  We simple divide it by 10 once to correct this and then return. If no integer arguments were pass however, we skip this divide instruction.</p>
+                        <p>当所有字符都完成转换后我们还有一件事要做：最后一位书代表的是个位而非十位，只需要除去10即可。</p>
 
                         <h5>What is the BL register</h5>
+                        <h5>BL寄存器是什么？</h5>
 
                         <p>You may have noticed that the atoi function references the BL register.  So far in these tutorials we have been exclusively using 32bit registers.   These 32bit general purpose registers contain segments of memory that can also be referenced. These segments are available in 16bits and 8bits.  We wanted a single byte (8bits) because a byte is the size of memory that is required to store a single ascii character.  If we used a larger memory size we would have copied 8bits of data into 32bits of space leaving us with 'rubbish' bits - because only the first 8bits would be meaningful for our calculation.</p>
+                        <p>你可能会注意到我们的字符串转数字函数使用到了BL寄存器。截至目前我们使用到的寄存器都是32位寄存器，这代表数据以32位一段来处理，但同时也可以用16位或8位。我们需要用到8位寄存器用来储存单个字符。如果使用了更大的内存空间，会造成浪费，因为我们的计算中只有8位实际有用。</p>
 
                         <p>The EBX register is 32bits.  EBX's 16 bit segment is referenced as BX.  BX contains the 8bit segments BL and BH (Lower and Higher bits).  We wanted the first 8bits (lower bits) of EBX and so we referenced that storage area using BL.</p>
+                        <p>EBX寄存器是32位寄存器，EBX的低16位是BX寄存器。BX又可以分为低8位BL和高8位BH。我们需要使用EBX的第一个低8位，所以使用BL寄存器。</p>
 
                         <p>Almost every assembly language tutorial begins with a history of the registers, their names and their sizes.  These tutorials however were written to provide a foundation in NASM by first writing code and then understanding the theory. The full story about the size of registers, their history and importance are beyond the scope of this tutorial but we will return to that story in later tutorials.</p>
+                        <p>几乎所有的汇编教程都是以寄存器的历史、名称、大小开始的，那些教程是通过写代码和对理论的理解来提供一个NASM汇编的基础。在本教程中，关于寄存器大小、历史和其他重要的事情都会在后文慢慢叙述。</p>
 
                         <p>
                             <span class="label label-info">Note:</span>
@@ -1819,40 +1839,40 @@
                                 ; int atoi(Integer number)
                                 ; Ascii to integer function (atoi)
                                 atoi:
-                                    push    ebx             ; preserve ebx on the stack to be restored after function runs
-                                    push    ecx             ; preserve ecx on the stack to be restored after function runs
-                                    push    edx             ; preserve edx on the stack to be restored after function runs
-                                    push    esi             ; preserve esi on the stack to be restored after function runs
-                                    mov     esi, eax        ; move pointer in eax into esi (our number to convert)
-                                    mov     eax, 0          ; initialise eax with decimal value 0
-                                    mov     ecx, 0          ; initialise ecx with decimal value 0
+                                    push    ebx             ; 保护EBX、ECX、EDX、ESI
+                                    push    ecx
+                                    push    edx
+                                    push    esi
+                                    mov     esi, eax        ; 将储存在EAX的字符串指针移动进入ESI
+                                    mov     eax, 0          ; 初始化EAX、ECX为0
+                                    mov     ecx, 0
 
                                 .multiplyLoop:
-                                    xor     ebx, ebx        ; resets both lower and uppper bytes of ebx to be 0
-                                    mov     bl, [esi+ecx]   ; move a single byte into ebx register's lower half
-                                    cmp     bl, 48          ; compare ebx register's lower half value against ascii value 48 (char value 0)
-                                    jl      .finished       ; jump if less than to label finished
-                                    cmp     bl, 57          ; compare ebx register's lower half value against ascii value 57 (char value 9)
-                                    jg      .finished       ; jump if greater than to label finished
+                                    xor     ebx, ebx        ; 将EBX的高低位都设置为0（译者注：这步操作比MOV EBX,0省性能）
+                                    mov     bl, [esi+ecx]   ; 从内存中读取一个字节，存入BL
+                                    cmp     bl, 48          ; 比较BL与'0'
+                                    jl      .finished       ; JL(Jump if Less) 如果小于则跳转，（译者注：字符串末尾NULL也会引发这一步跳转）
+                                    cmp     bl, 57          ; 比较BL与'9'
+                                    jg      .finished       ; JG(Jump if Greater) 如果大于则跳转
 
-                                    sub     bl, 48          ; convert ebx register's lower half to decimal representation of ascii value
-                                    add     eax, ebx        ; add ebx to our integer value in eax
-                                    mov     ebx, 10         ; move decimal value 10 into ebx
-                                    mul     ebx             ; multiply eax by ebx to get place value
-                                    inc     ecx             ; increment ecx (our counter register)
-                                    jmp     .multiplyLoop   ; continue multiply loop
+                                    sub     bl, 48          ; 将字符减去48转换为相应的数字
+                                    add     eax, ebx        ; 将EAX = EAX + EBX,这里BL是EBX的末8位，所以EBX在数值上等于BL
+                                    mov     ebx, 10         ; 令EBX = 10
+                                    mul     ebx             ; EAX = EAX * EBX(10)，这里是因为乘法指令也不能操作立即数
+                                    inc     ecx             ; ECX计数器自增
+                                    jmp     .multiplyLoop   ; 继续循环
 
                                 .finished:
-                                    cmp     ecx, 0          ; compare ecx register's value against decimal 0 (our counter register)
-                                    je      .restore        ; jump if equal to 0 (no integer arguments were passed to atoi)
-                                    mov     ebx, 10         ; move decimal value 10 into ebx
-                                    div     ebx             ; divide eax by value in ebx (in this case 10)
+                                    cmp     ecx, 0          ; 比较ECX是否为0,如果是，表明是因为读取到了非数字而导致的。
+                                    je      .restore        ; JE(Jump if Equal)，如果相等则跳转
+                                    mov     ebx, 10         ; 将EBX设置为10
+                                    div     ebx             ; EAX = EAX / EBX(10)
 
                                 .restore:
-                                    pop     esi             ; restore esi from the value we pushed onto the stack at the start
-                                    pop     edx             ; restore edx from the value we pushed onto the stack at the start
-                                    pop     ecx             ; restore ecx from the value we pushed onto the stack at the start
-                                    pop     ebx             ; restore ebx from the value we pushed onto the stack at the start
+                                    pop     esi             ; 恢复ESI、EDX、ECX、EBX
+                                    pop     edx
+                                    pop     ecx
+                                    pop     ebx
                                     ret
                             </pre>
                         </div>
@@ -1872,24 +1892,24 @@
 
                             _start:
 
-                                pop     ecx             ; first value on the stack is the number of arguments
-                                pop     edx             ; second value on the stack is the program name (discarded when we initialise edx)
-                                sub     ecx, 1          ; decrease ecx by 1 (number of arguments without program name)
-                                mov     edx, 0          ; initialise our data register to store additions
+                                pop     ecx             ; 用ECX记录参数个数
+                                pop     edx             ; 程序名，舍弃
+                                sub     ecx, 1          ; ECX减1,程序名项已舍弃
+                                mov     edx, 0          ; 初始化EDX用以储存求和数值
 
                             nextArg:
-                                cmp     ecx, 0h         ; check to see if we have any arguments left
-                                jz      noMoreArgs      ; if zero flag is set jump to noMoreArgs label (jumping over the end of the loop)
-                                pop     eax             ; pop the next argument off the stack
-                                call    atoi            ; convert our ascii string to decimal integer
-                                add     edx, eax        ; perform our addition logic
-                                dec     ecx             ; decrease ecx (number of arguments left) by 1
-                                jmp     nextArg         ; jump to nextArg label
+                                cmp     ecx, 0h         ; 检查是否有参数剩余
+                                jz      noMoreArgs      ; JZ(Jump if Zero)，如果没有，则结束循环
+                                pop     eax             ; 将栈顶的参数弹出
+                                call    atoi            ; 调用转换函数
+                                add     edx, eax        ; 累加
+                                dec     ecx             ; 参数数目自减
+                                jmp     nextArg         ; 循环
 
                             noMoreArgs:
-                                mov     eax, edx        ; move our data result into eax for printing
-                                call    iprintLF        ; call our integer printing with linefeed function
-                                call    quit            ; call our quit function
+                                mov     eax, edx        ; 移动求和数值进入EAX以调用数字输出函数
+                                call    iprintLF
+                                call    quit
                             </pre>
                             <div class="output">
                                 <div class="inner">
@@ -1911,9 +1931,11 @@
                         <header>
                             <h2>Lesson 17</h2>
                             <h4>Namespace</h4>
+                            <h4>命名空间</h4>
                         </header>
 
                         <p>Namespace is a necessary construct in any software project that involves a codebase that is larger than a few simple functions.  Namespace provides scope to your identifiers and allows you to reuse naming conventions to make your code more readable and maintainable.  In assembly language where subroutines are identified by global labels, namespace can be achieved by using local labels.</p>
+                        <p></p>
 
                         <p>Up until the last few tutorials we have been using global labels exclusively.  This means that blocks of logic that essentially perform the same task needed a label with a unique identifier.  A good example would be our "finished" labels.  These were global in scope meaning when we needed to break out of a loop in one function we could jump to a "finished" label.  But if we needed to break out of a loop in a different function we would need to name this same task something else maybe calling it "done" or "continue". Being able to reuse the label "finished" would mean that someone reading the code would know that these blocks of logic perform almost the same task.</p>
 
