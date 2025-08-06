@@ -1935,15 +1935,21 @@
                         </header>
 
                         <p>Namespace is a necessary construct in any software project that involves a codebase that is larger than a few simple functions.  Namespace provides scope to your identifiers and allows you to reuse naming conventions to make your code more readable and maintainable.  In assembly language where subroutines are identified by global labels, namespace can be achieved by using local labels.</p>
-                        <p></p>
+                        <p>命名空间是在任何软件工程中都很重要的一种结构，包括一些稍大于单个函数的代码库。命名空间可以划分独立的标识符空间，使得你可以重新使用相同的标识符名称，由此使得代码可读性和可维护性得到提升。在汇编语言中，子程序使用全局标签区分，命名空间使用本地标签(局部标签)来构成。</p>
 
                         <p>Up until the last few tutorials we have been using global labels exclusively.  This means that blocks of logic that essentially perform the same task needed a label with a unique identifier.  A good example would be our "finished" labels.  These were global in scope meaning when we needed to break out of a loop in one function we could jump to a "finished" label.  But if we needed to break out of a loop in a different function we would need to name this same task something else maybe calling it "done" or "continue". Being able to reuse the label "finished" would mean that someone reading the code would know that these blocks of logic perform almost the same task.</p>
+                        <p>以上的这些教程我们已经使用过了很多全局标签了，这意味着执行相同任务的逻辑需要独特的标识符：对此的一个很好的例子是'finished'标签。如果finished标签是全局标签，那么我们每一个函数需要结束循环时都会跳转到同一个fininshed标签中。但是如果我们需要在别的函数中以不同的结束循环逻辑操作时，就不再能使用fininshed这个标识符，而可能需要叫做done或者continue等等。如果能够复用finished这个标识符，别人在读我们的代码时也能直接看出来这些代码块的逻辑是类似的。</p>
 
                         <p>Local labels are prepended with a "." at the beginning of their name for example ".finished". You may have noticed them appearing as our code base in functions.asm grew.  A local label is given the namespace of the first global label above it. You can jump to a local label by using the JMP instruction and the compiler will calculate which local label you are referencing by determining in what scope (based on the above global labels) the instruction was called.</p>
+                        <p>局部标签以英文句号.开头，例如'.finished'。你可能注意到我们已经使用过了。局部标签位于其上方最近的一个全局标签所构成的命名空间作用域中，你可以通过JMP指令跳转到局部变量中。汇编编译器会自动在全局标签的命名空间作用域里面寻找你正在使用的局部标签。</p>
 
                         <p>
                             <span class="label label-info">Note:</span>
                             The file <a href="https://github.com/DGivney/assemblytutorials/blob/master/code/lesson17/functions.asm" target="_blank">functions.asm</a> was modified adding namespaces in all the subroutines. This is particularly important in the "slen" subroutine which contains a "finished" global label.
+                        </p>
+                        <p>
+                            <span class="label label-info">注意:</span>
+                            本课附件中的<a href="https://github.com/DGivney/assemblytutorials/blob/master/code/lesson17/functions.asm" target="_blank">functions.asm</a>已经修改为所有函数都加上命名空间了。这对于slen(strlen)子程序很重要。
                         </p>
 
                         <div class="snippet">
@@ -1957,9 +1963,9 @@
                             %include        'functions.asm'
 
                             SECTION .data
-                            msg1        db      'Jumping to finished label.', 0h        ; a message string
-                            msg2        db      'Inside subroutine number: ', 0h        ; a message string
-                            msg3        db      'Inside subroutine "finished".', 0h     ; a message string
+                            msg1        db      'Jumping to finished label.', 0h        ; 字符串
+                            msg2        db      'Inside subroutine number: ', 0h        ; 字符串
+                            msg3        db      'Inside subroutine "finished".', 0h     ; 字符串
 
                             SECTION .text
                             global  _start
@@ -1967,35 +1973,35 @@
                             _start:
 
                             subrountineOne:
-                                mov     eax, msg1       ; move the address of msg1 into eax
-                                call    sprintLF        ; call our string printing with linefeed function
-                                jmp     .finished       ; jump to the local label under the subrountineOne scope
+                                mov     eax, msg1       ; 移动要输出的文本
+                                call    sprintLF        ; 调用有换行符的输出函数
+                                jmp     .finished       ; 跳转到同命名空间下的结束段
 
                             .finished:
-                                mov     eax, msg2       ; move the address of msg2 into eax
-                                call    sprint          ; call our string printing function
-                                mov     eax, 1          ; move the value one into eax (for subroutine number one)
-                                call    iprintLF        ; call our integer printing function with linefeed function
+                                mov     eax, msg2       ; 移动要输出的文本
+                                call    sprint          ; 调用文本输出函数
+                                mov     eax, 1          ; 设置EAX为1，意味着现在是第一个子程序
+                                call    iprintLF        ; 输出这个1
 
                             subrountineTwo:
-                                mov     eax, msg1       ; move the address of msg1 into eax
-                                call    sprintLF        ; call our string print with linefeed function
-                                jmp     .finished       ; jump to the local label under the subrountineTwo scope
+                                mov     eax, msg1       ; 移动要输出的文本
+                                call    sprintLF        ; 调用有换行符的输出函数
+                                jmp     .finished       ; 跳转到同命名空间下的结束段
 
                             .finished:
-                                mov     eax, msg2       ; move the address of msg2 into eax
-                                call    sprint          ; call our string printing function
-                                mov     eax, 2          ; move the value two into eax (for subroutine number two)
-                                call    iprintLF        ; call our integer printing function with linefeed function
+                                mov     eax, msg2       ; 移动要输出的文本
+                                call    sprint          ; 调用文本输出函数
+                                mov     eax, 2          ; 设置EAX为2，意味着现在是第二个子程序
+                                call    iprintLF        ; 输出2
 
-                                mov     eax, msg1       ; move the address of msg1 into eax
-                                call    sprintLF        ; call our string printing with linefeed function
-                                jmp     finished        ; jump to the global label finished
+                                mov     eax, msg1       ; 移动要输出的文本
+                                call    sprintLF        ; 调用文本输出函数
+                                jmp     finished        ; 跳转到全局结束段
 
                             finished:
-                                mov     eax, msg3       ; move the address of msg3 into eax
-                                call    sprintLF        ; call our string printing with linefeed function
-                                call    quit            ; call our quit function
+                                mov     eax, msg3       ; 移动要输出的文本
+                                call    sprintLF        ; 调用文本输出函数
+                                call    quit            ; 退出程序
                             </pre>
                             <div class="output">
                                 <div class="inner">
@@ -2025,12 +2031,16 @@
                         </header>
 
                         <h5>Firstly, some background</h5>
+                        <h5>一些背景信息</h5>
 
                         <p>FizzBuzz is group word game played in schools to teach children division.  Players take turns to count aloud integers from 1 to 100 replacing any number divisible by 3 with the word "fizz" and any number divisible by 5 with the word "buzz".  Numbers that are both divisible by 3 and 5 are replaced by the word "fizzbuzz".  This children's game has also become a defacto interview screening question for computer programming jobs as it's thought to easily discover candidates that can't construct a simple logic gate.</p>
+                        <p>FizzBuzz是在学校教学生除法的一组文字游戏。玩家轮流从1数到100,当遇到被三整除的数要喊fizz,被五整除的数要喊buzz.如果同时被三五整除，那就喊fizzbuzz.这种小孩子的游戏事实上也可以设计为电脑程序因为它简单而又有明确的逻辑。</p>
 
                         <h5>Writing our program</h5>
+                        <h5>写程序</h5>
 
                         <p>There are a number of code solutions to this simple game and some languages offer very trivial and elegant solutions.  Depending on how you choose to solve it, the solution almost always involves an if statement and possibly an else statement depending whether you choose to exploit the mathematical property that anything divisible by 5 & 3 would also be divisible by 3 * 5.  Being that this is an assembly language tutorial we will provide a solution that involves a structure of two cascading if statements to print the words "fizz" and/or "buzz" and an else statement in case these fail, to print the integer as an ascii value.  Each iteration of our loop will then print a line feed. Once we reach 100 we call our program exit function.</p>
+                        <p>有很多的解决方案能够实现这个简单的游戏，甚至一些编程语言能够给你不费吹灰之力且优雅的解决方案。取决于你想实现的方式，解决方案主要包括一个if语句和可能的else语句，依靠你能否恰当地利用数学运算来判断一个数字能否被5、3整除或者能被3*5整除。在本教程中，我们将会使用一种包括两个级联if语句和一个else语句的结构来完成这个工作。两个if语句判断是否应该输出fizz或者buzz，如果都失败了就输出原始的数值。循环中每一项结束后都会输出一个换行符，一旦我们达到100就调用结束函数。</p>
 
                         <div class="snippet">
                             <span class="filename">fizzbuzz.asm</span>
@@ -2043,61 +2053,61 @@
                             %include        'functions.asm'
 
                             SECTION .data
-                            fizz        db      'Fizz', 0h     ; a message string
-                            buzz        db      'Buzz', 0h     ; a message string
+                            fizz        db      'Fizz', 0h     ; Fizz字符串
+                            buzz        db      'Buzz', 0h     ; Buzz字符串
 
                             SECTION .text
                             global  _start
 
                             _start:
 
-                                mov     esi, 0          ; initialise our checkFizz boolean variable
-                                mov     edi, 0          ; initialise our checkBuzz boolean variable
-                                mov     ecx, 0          ; initialise our counter variable
+                                mov     esi, 0          ; 初始化检查是否为Fizz的布尔值
+                                mov     edi, 0          ; 初始化检查是否为Buzz的布尔值
+                                mov     ecx, 0          ; 初始化计数器
 
                             nextNumber:
-                                inc     ecx             ; increment our counter variable
+                                inc     ecx             ; 计数器自增
 
                             .checkFizz:
-                                mov     edx, 0          ; clear the edx register - this will hold our remainder after division
-                                mov     eax, ecx        ; move the value of our counter into eax for division
-                                mov     ebx, 3          ; move our number to divide by into ebx (in this case the value is 3)
-                                div     ebx             ; divide eax by ebx
-                                mov     edi, edx        ; move our remainder into edi (our checkFizz boolean variable)
-                                cmp     edi, 0          ; compare if the remainder is zero (meaning the counter divides by 3)
-                                jne     .checkBuzz      ; if the remainder is not equal to zero jump to local label checkBuzz
-                                mov     eax, fizz       ; else move the address of our fizz string into eax for printing
-                                call    sprint          ; call our string printing function
+                                mov     edx, 0          ; 清除储存余数的edx寄存器
+                                mov     eax, ecx        ; 移动目前要判断的数到eax作为被除数
+                                mov     ebx, 3          ; 移动除数3到EBX
+                                div     ebx             ; 使用DIV指令执行除法
+                                mov     edi, edx        ; 移动余数到edi寄存器
+                                cmp     edi, 0          ; 比较是否有余数，如果为0表示整除，否则表述有余数
+                                jne     .checkBuzz      ; 如果不相等（JNE-Jump if Not Equal），则说明非3的倍数，直接跳转到Buzz检查
+                                mov     eax, fizz       ; 如果是3的倍数，会执行这一条，将fizz字符串移动到eax
+                                call    sprint          ; 输出fizz字符串
 
                             .checkBuzz:
-                                mov     edx, 0          ; clear the edx register - this will hold our remainder after division
-                                mov     eax, ecx        ; move the value of our counter into eax for division
-                                mov     ebx, 5          ; move our number to divide by into ebx (in this case the value is 5)
-                                div     ebx             ; divide eax by ebx
-                                mov     esi, edx        ; move our remainder into edi (our checkBuzz boolean variable)
-                                cmp     esi, 0          ; compare if the remainder is zero (meaning the counter divides by 5)
-                                jne     .checkInt       ; if the remainder is not equal to zero jump to local label checkInt
-                                mov     eax, buzz       ; else move the address of our buzz string into eax for printing
-                                call    sprint          ; call our string printing function
+                                mov     edx, 0          ; 基本逻辑同上
+                                mov     eax, ecx
+                                mov     ebx, 5
+                                div     ebx
+                                mov     esi, edx
+                                cmp     esi, 0
+                                jne     .checkInt
+                                mov     eax, buzz
+                                call    sprint
 
                             .checkInt:
-                                cmp     edi, 0          ; edi contains the remainder after the division in checkFizz
-                                je     .continue        ; if equal (counter divides by 3) skip printing the integer
-                                cmp     esi, 0          ; esi contains the remainder after the division in checkBuzz
-                                je     .continue        ; if equal (counter divides by 5) skip printing the integer
-                                mov     eax, ecx        ; else move the value in ecx (our counter) into eax for printing
-                                call    iprint          ; call our integer printing function
+                                cmp     edi, 0          ; EDI保存了checkFizz的结果
+                                je     .continue        ; 如果EDI为0说明被三整除，跳过输出原始数字这一步
+                                cmp     esi, 0          ; ESI保存了checkBuzz的结果
+                                je     .continue        ; 基本原理同上
+                                mov     eax, ecx        ; 如果不是三五的倍数，会执行到这里，将原始数字存入eax
+                                call    iprint          ; 调用数字输出函数将eax中的数字输出
 
                             .continue:
-                                mov     eax, 0Ah        ; move an ascii linefeed character into eax
-                                push    eax             ; push the address of eax onto the stack for printing
-                                mov     eax, esp        ; get the stack pointer (address on the stack of our linefeed char)
-                                call    sprint          ; call our string printing function to print a line feed
-                                pop     eax             ; pop the stack so we don't waste resources
-                                cmp     ecx, 100        ; compare if our counter is equal to 100
-                                jne     nextNumber      ; if not equal jump to the start of the loop
+                                mov     eax, 0Ah        ; 输出换行符的流程
+                                push    eax
+                                mov     eax, esp
+                                call    sprint
+                                pop     eax
+                                cmp     ecx, 100        ; 比较ecx是否达到100
+                                jne     nextNumber      ; 如果没达到，就继续循环
 
-                                call    quit            ; else call our quit function
+                                call    quit            ; 否则结束程序运行
                             </pre>
                             <div class="output">
                                 <div class="inner">
