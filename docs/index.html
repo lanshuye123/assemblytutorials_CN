@@ -1034,7 +1034,7 @@
                                 call    sprint      ; 调用原有的输出函数
                                 pop     eax         ; 将换行符从栈中弹出
                                 pop     eax         ; 恢复在运行我们的函数之前EAX的值
-                                ret                 ; 将程序的控制返回到主线程
+                                ret                 ; 将程序的控制返回到主进程
 
 
                             ;------------------------------------------
@@ -2145,13 +2145,17 @@
                         <header>
                             <h2>Lesson 19</h2>
                             <h4>Execute Command</h4>
+                            <h4>执行命令</h4>
                         </header>
 
                         <h5>Firstly, some background</h5>
+                        <h5>一些背景知识</h5>
 
                         <p>The EXEC family of functions replace the currently running process with a new process, that executes the command you specified when calling it.  We will be using the SYS_EXECVE function in this lesson to replace our program's running process with a new process that will execute the linux program /bin/echo to print out “Hello World!”.</p>
+                        <p>EXEC是一系列函数，用于将当前的进程替换为一个新进程，用以执行你在调用EXEC函数时指定的命令。在本课中，我们将使用SYS_EXECVE函数来替换我们程序的进程为/bin/echo以输出'Hello World!'</p>
 
                         <h5>Naming convention</h5>
+                        <h5>命名规范</h5>
 
                         <p>The naming convention used for this family of functions is <strong>exec</strong> (execute) followed by one or more of the following letters.</p>
 
@@ -2162,11 +2166,23 @@
                             <li><span class="instruction-name">v</span> - Command-line arguments are passed to the function as an array of pointers.</li>
                         </ul>
 
+                        <p><strong>exec</strong>系列的函数使用了如下的命名规范</p>
+
+                        <ul>
+                            <li><span class="instruction-name">e</span> - 一个指向环境变量的指针数组将会传递给新的进程.</li>
+                            <li><span class="instruction-name">l</span> - 命令行参数将会在函数中独立传递</li>
+                            <li><span class="instruction-name">p</span> - 使用PATH环境变量来寻找传入的文件</li>
+                            <li><span class="instruction-name">v</span> - 命令行参数将会作为指针数组传入</li>
+                        </ul>
+
                         <h5>Writing our program</h5>
+                        <h5>写程序</h5>
 
                         <p>The <span class="instruction-name">V</span> &amp; <span class="instruction-name">E</span> at the end of our function name means we will need to pass our arguments in the following format:  The first argument is a string containing the command to execute, then an array of arguments to pass to that command and then another array of environment variables that the new process will use.  As we are calling a simple command we won't pass any special environment variables to the new process and instead will pass 0h (null).</p>
+                        <p>我们调用的EXEC末尾的V和E意味着传递到参数遵循如下的原则：第一个参数是要执行的命令，接着是参数的数组。最后是新进程要使用到的环境变量。因为我们不需要传递什么环境变量，所以我们只传递一个NULL。</p>
 
                         <p>Both the command arguments and the environment arguments need to be passed as an array of pointers (addresses to memory).  That's why we define our strings first and then define a simple null-terminated struct (array) of the variables names.  This is then passed to SYS_EXECVE. We call the function and the process is replaced by our command and output is returned to the terminal.</p>
+                        <p>命令行参数和环境变量都需要以指针数组的形式传递。这也是为什么我们先定义字符串，再定义一个简单的以NULL结束的数组传递给SYS_EXECVE。我们调用这个函数接着现在的进程会被我们的命令所替换，输出会返回到终端上。</p>
 
                         <div class="snippet">
                             <span class="filename">execute.asm</span>
@@ -2179,25 +2195,25 @@
                             %include        'functions.asm'
 
                             SECTION .data
-                            command         db      '/bin/echo', 0h     ; command to execute
+                            command         db      '/bin/echo', 0h     ; 要执行的命令
                             arg1            db      'Hello World!', 0h
                             arguments       dd      command
-                                            dd      arg1                ; arguments to pass to commandline (in this case just one)
-                                            dd      0h                  ; end the struct
-                            environment     dd      0h                  ; arguments to pass as environment variables (inthis case none) end the struct
+                                            dd      arg1                ; 要传递的命令行参数
+                                            dd      0h                  ; 结束这个数组结构
+                            environment     dd      0h                  ; 要传递的环境变量，没有就只传递NULL结束符
 
                             SECTION .text
                             global  _start
 
                             _start:
 
-                                mov     edx, environment    ; address of environment variables
-                                mov     ecx, arguments      ; address of the arguments to pass to the commandline
-                                mov     ebx, command        ; address of the file to execute
-                                mov     eax, 11             ; invoke SYS_EXECVE (kernel opcode 11)
+                                mov     edx, environment    ; EDX存放环境变量数组的地址
+                                mov     ecx, arguments      ; ECX存放命令行参数数组地址
+                                mov     ebx, command        ; EBX存放要执行的命令
+                                mov     eax, 11             ; 执行SYS_EXECVE,编号11
                                 int     80h
 
-                                call    quit                ; call our quit function
+                                call    quit                ; 调用退出函数（译者注：实际上执行不到这行）
                             </pre>
                             <div class="output">
                                 <div class="inner">
@@ -2214,11 +2230,16 @@
                             Here are a couple other commands to try.
                         </p>
 
+                        <p>
+                            <span class="label label-info">注意:</span>
+                            也有一些其他可以尝试的命令。
+                        </p>
+
                         <div class="snippet">
                             <span class="filename">execute.asm</span>
                             <pre class="brush: asm; first-line: 8;">
                             SECTION .data
-                            command         db      '/bin/ls', 0h       ; command to execute
+                            command         db      '/bin/ls', 0h       ; 可以执行的命令
                             arg1            db      '-l', 0h
                             </pre>
                         </div>
@@ -2227,7 +2248,7 @@
                             <span class="filename">execute.asm</span>
                             <pre class="brush: asm; first-line: 8;">
                             SECTION .data
-                            command         db      '/bin/sleep', 0h    ; command to execute
+                            command         db      '/bin/sleep', 0h    ; 可以执行的命令
                             arg1            db      '5', 0h
                             </pre>
                         </div>
@@ -2242,17 +2263,25 @@
                         <header>
                             <h2>Lesson 20</h2>
                             <h4>Process Forking</h4>
+                            <h4>进程分叉（子进程）</h4>
                         </header>
 
                         <h5>Firstly, some background</h5>
+                        <h5>一些背景知识</h5>
 
                         <p>In this lesson we will use SYS_FORK to create a new process that duplicates our current process.  SYS_FORK takes no arguments - you just call fork and the new process is created.  Both processes run concurrently. We can test the return value (in eax) to test whether we are currently in the parent or child process.  The parent process returns a non-negative, non-zero integer.  In the child process EAX is zero.  This can be used to branch your logic between the parent and child.</p>
+                        <p>本课中，我们将使用SYS_FORK这个系统调用来创建一个重复我们当前进程的新进程。SYS_FORK系统调用不需要任何参数，只需要调用它，就能直接创建出新的进程。这两个进程是并发执行的，我们可以使用这个系统调用存放在EAX寄存器里面的返回值来区分我们在原来的进程还是子进程里面。原来的进程的EAX返回一个非负非零的整数，而子进程的EAX是0.接下来可以以此通过分支来区分原来的进程和子进程。</p>
 
                         <p>In our program we exploit this fact to print out different messages in each process.</p>
+                        <p>我们的程序将会揭示这一点并在不同的进程中输出不同的信息。</p>
 
                         <p>
                             <span class="label label-info">Note:</span>
                             Each process is responsible for safely exiting.
+                        </p>
+                        <p>
+                            <span class="label label-info">注意:</span>
+                            每一个进程都有责任安全地退出。
                         </p>
 
                         <div class="snippet">
@@ -2266,31 +2295,31 @@
                             %include        'functions.asm'
 
                             SECTION .data
-                            childMsg        db      'This is the child process', 0h     ; a message string
-                            parentMsg       db      'This is the parent process', 0h    ; a message string
+                            childMsg        db      'This is the child process', 0h     ; 字符串消息
+                            parentMsg       db      'This is the parent process', 0h    ; 字符串消息
 
                             SECTION .text
                             global  _start
 
                             _start:
 
-                                mov     eax, 2              ; invoke SYS_FORK (kernel opcode 2)
+                                mov     eax, 2              ; 调用SYS_FORK,系统调用编号为2
                                 int     80h
 
-                                cmp     eax, 0              ; if eax is zero we are in the child process
-                                jz      child               ; jump if eax is zero to child label
+                                cmp     eax, 0              ; 如果EAX为0,说明在子进程里面
+                                jz      child               ; 零则跳转
 
                             parent:
-                                mov     eax, parentMsg      ; inside our parent process move parentMsg into eax
-                                call    sprintLF            ; call our string printing with linefeed function
+                                mov     eax, parentMsg      ; 在原来的进程里面输出的文本
+                                call    sprintLF            ; 调用文本输出函数
 
-                                call    quit                ; quit the parent process
+                                call    quit                ; 结束原来的进程
 
                             child:
-                                mov     eax, childMsg       ; inside our child process move childMsg into eax
-                                call    sprintLF            ; call our string printing with linefeed function
+                                mov     eax, childMsg       ; 在子进程里面输出的文本
+                                call    sprintLF            ; 调用文本输出函数
 
-                                call    quit                ; quit the child process
+                                call    quit                ; 结束子进程
                             </pre>
                             <div class="output">
                                 <div class="inner">
@@ -2313,11 +2342,14 @@
                         <header>
                             <h2>Lesson 21</h2>
                             <h4>Telling the time</h4>
+                            <h4>为您报时</h4>
                         </header>
 
                         <p>Generating a unix timestamp in NASM is easy with the SYS_TIME function of the linux kernel.  Simply pass OPCODE 13 to the kernel with no arguments and you are returned the <a href="https://en.wikipedia.org/wiki/Unix_epoch">Unix Epoch</a> in the EAX register.</p>
+                        <p>在NASM汇编中，你可以很轻易地使用SYS_TIME系统调用获取到一个Unix时间戳。只需要传递（在x86汇编中）编号为13的系统调用给内核，你就能在EAX中获取到一个<a href="https://baike.baidu.com/item/unix时间戳">Unix时间戳</a></p>
 
                         <p>That is the number of seconds that have elapsed since January 1st 1970 UTC.</p>
+                        <p>换句话说，就是从UTC(北京时间 减8小时) 1970年1月1日零点整到现在的秒数。</p>
 
                         <div class="snippet">
                             <span class="filename">time.asm</span>
@@ -2330,21 +2362,21 @@
                             %include        'functions.asm'
 
                             SECTION .data
-                            msg        db      'Seconds since Jan 01 1970: ', 0h     ; a message string
+                            msg        db      'Seconds since Jan 01 1970: ', 0h     ; 字符串
 
                             SECTION .text
                             global  _start
 
                             _start:
 
-                                mov     eax, msg        ; move our message string into eax for printing
-                                call    sprint          ; call our string printing function
+                                mov     eax, msg        ; 移动要输出的文本到EAX
+                                call    sprint          ; 调用文本输出函数
 
-                                mov     eax, 13         ; invoke SYS_TIME (kernel opcode 13)
-                                int     80h             ; call the kernel
+                                mov     eax, 13         ; 调用SYS_TIME
+                                int     80h             ; 激活系统调用
 
-                                call    iprintLF        ; call our integer printing function with linefeed
-                                call    quit            ; call our quit function
+                                call    iprintLF        ; 调用数字输出函数
+                                call    quit            ; 结束程序
                             </pre>
                             <div class="output">
                                 <div class="inner">
@@ -2366,13 +2398,17 @@
                         <header>
                             <h2>Lesson 22</h2>
                             <h4>File Handling - Create</h4>
+                            <h4>文件句柄 - 创建</h4>
                         </header>
 
                         <h5>Firstly, some background</h5>
+                        <h5>一些背景知识</h5>
 
                         <p>File Handling in Linux is achieved through a small number of system calls related to creating, updating and deleting files. These functions require a <a href="https://en.wikipedia.org/wiki/File_descriptor" target="_blank">file descriptor</a> which is a unique, non-negative integer that identifies the file on the system.</p>
+                        <p>Linux中的文件句柄是通过少量与文件创建、读写和删除的系统调用来实现的。这些函数需要在系统唯一确定的非负整数作为<a href="https://baike.baidu.com/item/文件描述符">文件描述符</a>。</p>
 
                         <h5>Writing our program</h5>
+                        <h5>写程序</h5>
 
                         <p>We begin the tutorial by creating a file using sys_creat.  We will then build upon our program in each of the following file handling lessons, adding code as we go. Eventually we will have a full program that can create, update, open, close and delete files.</p>
 
