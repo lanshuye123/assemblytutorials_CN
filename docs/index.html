@@ -2411,8 +2411,10 @@
                         <h5>写程序</h5>
 
                         <p>We begin the tutorial by creating a file using sys_creat.  We will then build upon our program in each of the following file handling lessons, adding code as we go. Eventually we will have a full program that can create, update, open, close and delete files.</p>
+                        <p>我们通过使用SYS_CREAT系统调用来创建文件。接下来关于文件句柄的若干课程都是在本课程基础上新增代码实现的。最终我们要做出一个能够创建、上传、打开、关闭和删除文件的完整的应用程序。</p>
 
                         <p>sys_creat expects 2 arguments - the file permissions in ECX and the filename in EBX.  The sys_creat opcode is then loaded into EAX and the kernel is called to create the file. The file descriptor of the created file is returned in EAX. This file descriptor can then be used for all other file handling functions.</p>
+                        <p>SYS_CREAT系统调用需要两个参数，EBX存放文件名、ECX存放文件权限。将SYS_CREAT的操作数传入EAX调用内核触发系统调用，就可以创建文件了。被创建的文件的文件描述符会被作为返回值存放在EAX,接着可以用于其他那些操作文件的函数中。</p>
 
                         <div class="snippet">
                             <span class="filename">create.asm</span>
@@ -2425,19 +2427,19 @@
                                 %include    'functions.asm'
 
                                 SECTION .data
-                                filename db 'readme.txt', 0h    ; the filename to create
+                                filename db 'readme.txt', 0h    ; 要创建的文件名
 
                                 SECTION .text
                                 global  _start
 
                                 _start:
 
-                                    mov     ecx, 0777o          ; set all permissions to read, write, execute
-                                    mov     ebx, filename       ; filename we will create
-                                    mov     eax, 8              ; invoke SYS_CREAT (kernel opcode 8)
-                                    int     80h                 ; call the kernel
+                                    mov     ecx, 0777o          ; 全部用户可读可写可执行
+                                    mov     ebx, filename       ; 要创建的文件名
+                                    mov     eax, 8              ; SYS_CREAT的系统调用编号为8
+                                    int     80h                 ; 触发系统调用
 
-                                    call    quit                ; call our quit function
+                                    call    quit                ; 退出程序
                             </pre>
                             <div class="output">
                                 <div class="inner">
@@ -2453,6 +2455,11 @@
                             The file 'readme.txt' will now have been created in the folder.
                         </p>
 
+                        <p>
+                            <span class="label label-info">注意:</span>
+                            现在'readme.txt''就会被创建于程序的工作目录。
+                        </p>
+
                     </article>
                 </div>
 
@@ -2463,11 +2470,14 @@
                         <header>
                             <h2>Lesson 23</h2>
                             <h4>File Handling - Write</h4>
+                            <h4>文件句柄 - 写入</h4>
                         </header>
 
                         <p>Building upon the previous lesson we will now use sys_write to write content to a newly created file.</p>
+                        <p>在上一课的基础上，我们现在将使用sys_write来向新创建的文件中写入内容。</p>
 
                         <p>sys_write expects 3 arguments - the number of bytes to write in EDX, the contents string to write in ECX and the <a href="https://en.wikipedia.org/wiki/File_descriptor" target="_blank">file descriptor</a> in EBX.  The sys_write opcode is then loaded into EAX and the kernel is called to write the content to the file. In this lesson we will first call sys_creat to get a file descriptor which we will then load into EBX.</p>
+                        <p>SYS_WRITE需要传入三个参数，分别EBX存放文件描述符，ECX存放要写入的字符串，EDX是要写入的字节数。将SYS_WRITE的操作数写入EAX再调用系统调用，就能够将内容写入到文件中。在本课程中，我们先调用SYS_CREAT获取到要写入的文件的描述符。</p>
 
                         <div class="snippet">
                             <span class="filename">write.asm</span>
@@ -2480,26 +2490,26 @@
                                 %include    'functions.asm'
 
                                 SECTION .data
-                                filename db 'readme.txt', 0h    ; the filename to create
-                                contents db 'Hello world!', 0h  ; the contents to write
+                                filename db 'readme.txt', 0h    ; 要创建的文件名
+                                contents db 'Hello world!', 0h  ; 要写入的内容
 
                                 SECTION .text
                                 global  _start
 
                                 _start:
 
-                                    mov     ecx, 0777o          ; code continues from lesson 22
+                                    mov     ecx, 0777o          ; 这里接续着上一课创建文件的代码
                                     mov     ebx, filename
                                     mov     eax, 8
                                     int     80h
 
-                                    mov     edx, 12             ; number of bytes to write - one for each letter of our contents string
-                                    mov     ecx, contents       ; move the memory address of our contents string into ecx
-                                    mov     ebx, eax            ; move the file descriptor of the file we created into ebx
-                                    mov     eax, 4              ; invoke SYS_WRITE (kernel opcode 4)
-                                    int     80h                 ; call the kernel
+                                    mov     edx, 12             ; 要写入的字节数（译者注：这里可以复用此前的strlen）
+                                    mov     ecx, contents       ; 要写入的文本
+                                    mov     ebx, eax            ; 在上面的系统调用之后，EAX存放的是新建的文件的文件描述符，在这里传入ebx作为参数
+                                    mov     eax, 4              ; 在x86汇编中，SYS_WRITE是4
+                                    int     80h                 ; 触发系统调用
 
-                                    call    quit                ; call our quit function
+                                    call    quit                ; 退出
                             </pre>
                             <div class="output">
                                 <div class="inner">
@@ -2514,6 +2524,10 @@
                             <span class="label label-info">Note:</span>
                             Open the newly created file 'readme.txt' in this folder and you will see the content 'Hello world!'.
                         </p>
+                        <p>
+                            <span class="label label-info">注意:</span>
+                            现在打开新创建的'readme.txt'，就可以看到内容'Hello world!'
+                        </p>
 
                     </article>
                 </div>
@@ -2525,13 +2539,17 @@
                         <header>
                             <h2>Lesson 24</h2>
                             <h4>File Handling - Open</h4>
+                            <h4>文件句柄 - 打开</h4>
                         </header>
 
                         <p>Building upon the previous lesson we will now use sys_open to obtain the <a href="https://en.wikipedia.org/wiki/File_descriptor" target="_blank">file descriptor</a> of the newly created file. This file descriptor can then be used for all other file handling functions.</p>
+                        <p>在先前课程的基础上，我们现在将使用SYS_OPEN系统调用来获取新创建的文件的文件描述符，以此传递给其他各种文件相关函数。</p>
 
                         <p>sys_open expects 2 arguments - the access mode (table below) in ECX and the filename in EBX.  The sys_open opcode is then loaded into EAX and the kernel is called to open the file and return the file descriptor.</p>
+                        <p>SYS_OPEN函数需要两个参数，文件名存放在EBX、打开模式(见下表)存放在ECX中。SYS_OPEN的操作数储存在EAX中，在调用之后的返回值文件描述符也会储存在EAX中。</p>
 
                         <p>sys_open additionally accepts zero or more file creation flags and file status flags in EDX. <a href="http://man7.org/linux/man-pages/man2/open.2.html" target="_blank">Click here for more information about the access mode, file creation flags and file status flags</a>.</p>
+                        <p>SYS_OPEN额外接受0或者更多的文件标志位或文件状态传入EDX作为参数，<a href="http://man7.org/linux/man-pages/man2/open.2.html" target="_blank">详情可以参见此处。</a></p>
 
                         <div class="row-fluid">
                             <div class="span6">
@@ -2539,8 +2557,8 @@
                                     <thead>
                                         <tr>
                                             <th></th>
-                                            <th>Description</th>
-                                            <th>Value</th>
+                                            <th>Description 描述</th>
+                                            <th>Value 取值</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -2550,13 +2568,28 @@
                                             <td>0</td>
                                         </tr>
                                         <tr>
+                                            <td><b>O_RDONLY</b></td>
+                                            <td>以只读模式打开文件</td>
+                                            <td>0</td>
+                                        </tr>
+                                        <tr>
                                             <td><b>O_WRONLY</b></td>
                                             <td>open file in write only mode</td>
                                             <td>1</td>
                                         </tr>
                                         <tr>
+                                            <td><b>O_WRONLY</b></td>
+                                            <td>以只写模式打开文件</td>
+                                            <td>1</td>
+                                        </tr>
+                                        <tr>
                                             <td><b>O_RDWR</b></td>
                                             <td>open file in read and write mode</td>
+                                            <td>2</td>
+                                        </tr>
+                                        <tr>
+                                            <td><b>O_RDWR</b></td>
+                                            <td>以可读可写模式打开文件</td>
                                             <td>2</td>
                                         </tr>
                                     </tbody>
@@ -2567,6 +2600,10 @@
                         <p>
                             <span class="label label-info">Note:</span>
                             sys_open returns the file descriptor in EAX. On linux this will be a unique, non-negative integer which we will print using our integer printing function.
+                        </p>
+                        <p>
+                            <span class="label label-info">注意:</span>
+                            SYS_OPEN将会把文件描述符的返回值存放在EAX中，在Linux系统中，文件描述符将会是唯一的非负整数。我们将使用此前做好的整数输出函数来演示文件描述符的取值。
                         </p>
 
                         <div class="snippet">
@@ -2580,32 +2617,32 @@
                                 %include    'functions.asm'
 
                                 SECTION .data
-                                filename db 'readme.txt', 0h    ; the filename to create
-                                contents db 'Hello world!', 0h  ; the contents to write
+                                filename db 'readme.txt', 0h    ; 文件名
+                                contents db 'Hello world!', 0h  ; 要写入的内容
 
                                 SECTION .text
                                 global  _start
 
                                 _start:
 
-                                    mov     ecx, 0777o          ; Create file from lesson 22
+                                    mov     ecx, 0777o          ; 第22课创建文件
                                     mov     ebx, filename
                                     mov     eax, 8
                                     int     80h
 
-                                    mov     edx, 12             ; Write contents to file from lesson 23
+                                    mov     edx, 12             ; 第23课写入文件
                                     mov     ecx, contents
                                     mov     ebx, eax
                                     mov     eax, 4
                                     int     80h
 
-                                    mov     ecx, 0              ; flag for readonly access mode (O_RDONLY)
-                                    mov     ebx, filename       ; filename we created above
-                                    mov     eax, 5              ; invoke SYS_OPEN (kernel opcode 5)
-                                    int     80h                 ; call the kernel
+                                    mov     ecx, 0              ; 只读的文件操作模式(O_RDONLY)
+                                    mov     ebx, filename       ; 我们之前创建的文件名
+                                    mov     eax, 5              ; SYS_OPEN的系统调用编号为5
+                                    int     80h                 ; 触发系统调用
 
-                                    call    iprintLF            ; call our integer printing function
-                                    call    quit                ; call our quit function
+                                    call    iprintLF            ; 调用整数输出函数
+                                    call    quit                ; 结束程序
                             </pre>
                             <div class="output">
                                 <div class="inner">
@@ -2627,15 +2664,22 @@
                         <header>
                             <h2>Lesson 25</h2>
                             <h4>File Handling - Read</h4>
+                            <h4>文件句柄 - 读取</h4>
                         </header>
 
                         <p>Building upon the previous lesson we will now use sys_read to read the content of a newly created and opened file. We will store this string in a variable.</p>
+                        <p>在前几课的基础上，我们将使用sys_read系统调用来读取我们新创建和打开的文件的内容。我们将储存读入的字符串进入变量。</p>
 
                         <p>sys_read expects 3 arguments - the number of bytes to read in EDX, the memory address of our variable in ECX and the <a href="https://en.wikipedia.org/wiki/File_descriptor" target="_blank">file descriptor</a> in EBX.  We will use the previous lessons sys_open code to obtain the file descriptor which we will then load into EBX. The sys_read opcode is then loaded into EAX and the kernel is called to read the file contents into our variable and is then printed to the screen.</p>
+                        <p>SYS_READ系统调用需要传入三个参数，分别EBX文件描述符、ECX目标内存地址、EDX要读取的字节数。我们将会是用之前的SYS_OPEN来获取文件描述符，加载到EBX中。将SYS_READ的系统调用编号传入EAX再触发系统调用，就可以将文件的内容读取变量并输出到屏幕中。</p>
 
                         <p>
                             <span class="label label-info">Note:</span>
                             We will reserve 255 bytes in the .bss section to store the contents of the file. <a href="#lesson9">See Lesson 9 for more information on the .bss section.</a>
+                        </p>
+                        <p>
+                            <span class="label label-info">注意:</span>
+                            我们在bss段保留255字节来储存文件的内容。<a href="#lesson9">跳转回到第九课关于BSS段的内容</a>
                         </p>
 
                         <div class="snippet">
@@ -2649,43 +2693,43 @@
                                 %include    'functions.asm'
 
                                 SECTION .data
-                                filename db 'readme.txt', 0h    ; the filename to create
-                                contents db 'Hello world!', 0h  ; the contents to write
+                                filename db 'readme.txt', 0h    ; 文件名
+                                contents db 'Hello world!', 0h  ; 写入内容
 
                                 SECTION .bss
-                                fileContents resb 255,          ; variable to store file contents
+                                fileContents resb 255,          ; 储存文件内容的BSS段
 
                                 SECTION .text
                                 global  _start
 
                                 _start:
 
-                                    mov     ecx, 0777o          ; Create file from lesson 22
+                                    mov     ecx, 0777o          ; 第22课创建文件
                                     mov     ebx, filename
                                     mov     eax, 8
                                     int     80h
 
-                                    mov     edx, 12             ; Write contents to file from lesson 23
+                                    mov     edx, 12             ; 第23课写入文件
                                     mov     ecx, contents
                                     mov     ebx, eax
                                     mov     eax, 4
                                     int     80h
 
-                                    mov     ecx, 0              ; Open file from lesson 24
+                                    mov     ecx, 0              ; 第24可打开文件
                                     mov     ebx, filename
                                     mov     eax, 5
                                     int     80h
 
-                                    mov     edx, 12             ; number of bytes to read - one for each letter of the file contents
-                                    mov     ecx, fileContents   ; move the memory address of our file contents variable into ecx
-                                    mov     ebx, eax            ; move the opened file descriptor into EBX
-                                    mov     eax, 3              ; invoke SYS_READ (kernel opcode 3)
-                                    int     80h                 ; call the kernel
+                                    mov     edx, 12             ; 要读取的字节数
+                                    mov     ecx, fileContents   ; 传入要储存读取内容的地址
+                                    mov     ebx, eax            ; 将已打开文件的描述符传入EBX
+                                    mov     eax, 3              ; SYS_READ的系统调用编号是3
+                                    int     80h                 ; 触发系统调用
 
-                                    mov     eax, fileContents   ; move the memory address of our file contents variable into eax for printing
-                                    call    sprintLF            ; call our string printing function
+                                    mov     eax, fileContents   ; 将EAX指向储存读入内容的字符串
+                                    call    sprintLF            ; 调用文本输出函数
 
-                                    call    quit                ; call our quit function
+                                    call    quit                ; 退出程序
                             </pre>
                             <div class="output">
                                 <div class="inner">
