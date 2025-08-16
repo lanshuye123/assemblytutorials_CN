@@ -2715,7 +2715,7 @@
                                     mov     eax, 4
                                     int     80h
 
-                                    mov     ecx, 0              ; 第24可打开文件
+                                    mov     ecx, 0              ; 第24课打开文件
                                     mov     ebx, filename
                                     mov     eax, 5
                                     int     80h
@@ -2751,11 +2751,14 @@
                         <header>
                             <h2>Lesson 26</h2>
                             <h4>File Handling - Close</h4>
+                            <h4>文件句柄 - 关闭</h4>
                         </header>
 
                         <p>Building upon the previous lesson we will now use sys_close to properly close an open file.</p>
+                        <p>在以上课程的基础上，我们将使用SYS_CLOSE来恰当地关闭已打开的文件。</p>
 
                         <p>sys_close expects 1 argument - the <a href="https://en.wikipedia.org/wiki/File_descriptor" target="_blank">file descriptor</a> in EBX.  We will use the previous lessons code to obtain the file descriptor which we will then load into EBX. The sys_close opcode is then loaded into EAX and the kernel is called to close the file and remove the active file descriptor.</p>
+                        <p>SYS_CLOSE只需要向EBX传入要关闭的文件的文件描述符即可。我们将使用此前打开文件的代码来获取要传入EBX以关闭的文件描述符。SYS_CLOSE操作数加载到EAX后触发系统调用，文件就可以恰当地被关闭，活跃的文件描述符也随之移除。</p>
 
                         <div class="snippet">
                             <span class="filename">close.asm</span>
@@ -2768,34 +2771,34 @@
                                 %include    'functions.asm'
 
                                 SECTION .data
-                                filename db 'readme.txt', 0h    ; the filename to create
-                                contents db 'Hello world!', 0h  ; the contents to write
+                                filename db 'readme.txt', 0h    ; 文件名
+                                contents db 'Hello world!', 0h  ; 要写入的内容
 
                                 SECTION .bss
-                                fileContents resb 255,          ; variable to store file contents
+                                fileContents resb 255,          ; 储存文件内容的BSS段
 
                                 SECTION .text
                                 global  _start
 
                                 _start:
 
-                                    mov     ecx, 0777o          ; Create file from lesson 22
+                                    mov     ecx, 0777o          ; 第22课创建文件
                                     mov     ebx, filename
                                     mov     eax, 8
                                     int     80h
 
-                                    mov     edx, 12             ; Write contents to file from lesson 23
+                                    mov     edx, 12             ; 第23课写入文件
                                     mov     ecx, contents
                                     mov     ebx, eax
                                     mov     eax, 4
                                     int     80h
 
-                                    mov     ecx, 0              ; Open file from lesson 24
+                                    mov     ecx, 0              ; 第24课打开文件
                                     mov     ebx, filename
                                     mov     eax, 5
                                     int     80h
 
-                                    mov     edx, 12             ; Read file from lesson 25
+                                    mov     edx, 12             ; 第25课读取文件
                                     mov     ecx, fileContents
                                     mov     ebx, eax
                                     mov     eax, 3
@@ -2804,11 +2807,11 @@
                                     mov     eax, fileContents
                                     call    sprintLF
 
-                                    mov     ebx, ebx            ; not needed but used to demonstrate that SYS_CLOSE takes a file descriptor from EBX
-                                    mov     eax, 6              ; invoke SYS_CLOSE (kernel opcode 6)
-                                    int     80h                 ; call the kernel
+                                    mov     ebx, ebx            ; 这句不是必须的，但是在逻辑上意思是把SYS_CLOSE的EBX需要
+                                    mov     eax, 6              ; SYS_CLOSE的操作数是6
+                                    int     80h                 ; 触发系统调用
 
-                                    call    quit                ; call our quit function
+                                    call    quit                ; 调用退出函数
                             </pre>
                             <div class="output">
                                 <div class="inner">
@@ -2824,6 +2827,10 @@
                             <span class="label label-info">Note:</span>
                             We have properly closed the file and removed the active file descriptor.
                         </p>
+                        <p>
+                            <span class="label label-info">注意:</span>
+                            我们已经恰当地关闭了文件并且移除了活跃的文件描述符。
+                        </p>
 
                     </article>
                 </div>
@@ -2835,13 +2842,17 @@
                         <header>
                             <h2>Lesson 27</h2>
                             <h4>File Handling - Seek</h4>
+                            <h4>文件句柄 - 采集</h4>
                         </header>
 
                         <p>In this lesson we will open a file and update the file contents at the end of the file using sys_lseek.</p>
+                        <p>本课中，我们将打开一个文件，再使用SYS_LSEEK达到文件末尾并上传内容。</p>
 
                         <p>Using sys_lseek you can move the cursor within the file by an offset in bytes.  The below example will move the cursor to the end of the file, then pass 0 bytes as the offset (so we append to the end of the file and not beyond) before writing a string in that position.  Try different values in ECX and EDX to write the content to different positions within the opened file.</p>
+                        <p>使用SYS_LSEEK可以移动文件内读写光标前进一定偏移量的字符数。下面的例子将演示如何移动光标达到文件末尾，接着在开始写入字符串之前再设置传递偏移量为0以确保达到末尾而不是超出了文件。也可以尝试在ECX和EDX中传入不同的值来看看内容会被写入到文件的什么地方。</p>
 
                         <p>sys_lseek expects 3 arguments - the whence argument (table below) in EDX, the offset in bytes in ECX, and the <a href="https://en.wikipedia.org/wiki/File_descriptor" target="_blank">file descriptor</a> in EBX. The sys_lseek opcode is then loaded into EAX and we call the kernel to move the file pointer to the correct offset.  We then use sys_write to update the content at that position.</p>
+                        <p>SYS_LSEEK需要三个参数，EBX传入文件描述符，ECX传入偏移量，EDX传入参考点。将SYS_LSEEK的操作数加载到EAX中，接着触发系统调用，文件操作光标就会移动到需要的位置。我们接下来使用SYS_WRITE在目标位置写入内容。</p>
 
                         <div class="row-fluid">
                             <div class="span6">
@@ -2849,8 +2860,8 @@
                                     <thead>
                                         <tr>
                                             <th></th>
-                                            <th>Description</th>
-                                            <th>Value</th>
+                                            <th>描述</th>
+                                            <th>取值</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -2860,13 +2871,28 @@
                                             <td>0</td>
                                         </tr>
                                         <tr>
+                                            <td><b>SEEK_SET</b></td>
+                                            <td>文件开头</td>
+                                            <td>0</td>
+                                        </tr>
+                                        <tr>
                                             <td><b>SEEK_CUR</b></td>
                                             <td>current file offset</td>
                                             <td>1</td>
                                         </tr>
                                         <tr>
+                                            <td><b>SEEK_CUR</b></td>
+                                            <td>当前光标偏移量</td>
+                                            <td>1</td>
+                                        </tr>
+                                        <tr>
                                             <td><b>SEEK_END</b></td>
                                             <td>end of the file</td>
+                                            <td>2</td>
+                                        </tr>
+                                        <tr>
+                                            <td><b>SEEK_END</b></td>
+                                            <td>文件末尾</td>
                                             <td>2</td>
                                         </tr>
                                     </tbody>
@@ -2880,6 +2906,10 @@
                             <span class="label label-info">Note:</span>
                             A file 'readme.txt' has been included in the code folder for this lesson. This file will be updated after running the program.
                         </p>
+                        <p>
+                            <span class="label label-info">注意:</span>
+                            文件'readme.txt'已经放到了这一课的代码文件夹中，在运行程序之后，文件内容将会发生改变。
+                        </p>
 
                         <div class="snippet">
                             <span class="filename">seek.asm</span>
@@ -2892,32 +2922,32 @@
                                 %include    'functions.asm'
 
                                 SECTION .data
-                                filename db 'readme.txt', 0h    ; the filename to create
-                                contents  db '-updated-', 0h     ; the contents to write at the start of the file
+                                filename db 'readme.txt', 0h    ; 文件名
+                                contents  db '-updated-', 0h     ; 要写入的内容
 
                                 SECTION .text
                                 global  _start
 
                                 _start:
 
-                                    mov     ecx, 1              ; flag for writeonly access mode (O_WRONLY)
-                                    mov     ebx, filename       ; filename of the file to open
-                                    mov     eax, 5              ; invoke SYS_OPEN (kernel opcode 5)
-                                    int     80h                 ; call the kernel
+                                    mov     ecx, 1              ; 以只写模式(O_WRONLY)打开文件
+                                    mov     ebx, filename       ; 要打开的文件名
+                                    mov     eax, 5              ; 传入SYS_OPEN (操作数为5)到EAX
+                                    int     80h                 ; 触发系统调用
 
-                                    mov     edx, 2              ; whence argument (SEEK_END)
-                                    mov     ecx, 0              ; move the cursor 0 bytes
-                                    mov     ebx, eax            ; move the opened file descriptor into EBX
-                                    mov     eax, 19             ; invoke SYS_LSEEK (kernel opcode 19)
-                                    int     80h                 ; call the kernel
+                                    mov     edx, 2              ; 传入偏移参考点(SEEK_END)
+                                    mov     ecx, 0              ; 偏移0字节，也就是在文件末尾不移动
+                                    mov     ebx, eax            ; 将刚才SYS_OPEN获取到的文件描述符从eax传入ebx作为参数
+                                    mov     eax, 19             ; 传入SYS_LSEEK (操作数 19)到EAX
+                                    int     80h                 ; 触发系统调用
 
-                                    mov     edx, 9              ; number of bytes to write - one for each letter of our contents string
-                                    mov     ecx, contents       ; move the memory address of our contents string into ecx
-                                    mov     ebx, ebx            ; move the opened file descriptor into EBX (not required as EBX already has the FD)
-                                    mov     eax, 4              ; invoke SYS_WRITE (kernel opcode 4)
-                                    int     80h                 ; call the kernel
+                                    mov     edx, 9              ; 要写入的内容
+                                    mov     ecx, contents       ; 移动要写入的文本到ECX
+                                    mov     ebx, ebx            ; 这一步是出于演示的，将文件描述符传入ebx
+                                    mov     eax, 4              ; 传入SYS_WRITE (操作数 4)到EAX
+                                    int     80h                 ; 触发系统调用
 
-                                    call    quit                ; call our quit function
+                                    call    quit                ; 退出程序
                             </pre>
                             <div class="output">
                                 <div class="inner">
@@ -2936,15 +2966,22 @@
                         <header>
                             <h2>Lesson 28</h2>
                             <h4>File Handling - Delete</h4>
+                            <h4>文件句柄 - 删除</h4>
                         </header>
 
                         <p>Deleting a file on linux is achieved by calling sys_unlink.</p>
+                        <p>在Linux中，可以通过SYS_UNLINK系统调用删除文件。</p>
 
                         <p>sys_unlink expects 1 argument - the filename in EBX.  The sys_unlink opcode is then loaded into EAX and the kernel is called to delete the file.</p>
+                        <p>SYS_UNLINK只需要将文件名传入EBX作为唯一的参宿，接着将调用操作数传入EAX触发系统调用即可删除文件。</p>
 
                         <p>
                             <span class="label label-info">Note:</span>
                             A file 'readme.txt' has been included in the code folder for this lesson. This file will be deleted after running the program.
+                        </p>
+                        <p>
+                            <span class="label label-info">注意:</span>
+                            一个'readme.txt'已经被存放在本课的代码文件夹中，在运行完程序之后，这个文件将会被删除。
                         </p>
 
                         <div class="snippet">
@@ -2958,18 +2995,18 @@
                                 %include    'functions.asm'
 
                                 SECTION .data
-                                filename db 'readme.txt', 0h    ; the filename to delete
+                                filename db 'readme.txt', 0h    ; 要删除的文件名
 
                                 SECTION .text
                                 global  _start
 
                                 _start:
 
-                                    mov     ebx, filename       ; filename we will delete
-                                    mov     eax, 10             ; invoke SYS_UNLINK (kernel opcode 10)
-                                    int     80h                 ; call the kernel
+                                    mov     ebx, filename       ; 将文件名传入EBX
+                                    mov     eax, 10             ; 将SYS_UNLINK (操作数为 10)传入EAX
+                                    int     80h                 ; 触发系统调用
 
-                                    call    quit                ; call our quit function
+                                    call    quit                ; 退出程序
                             </pre>
                             <div class="output">
                                 <div class="inner">
@@ -2988,21 +3025,31 @@
                         <header>
                             <h2>Lesson 29</h2>
                             <h4>Sockets - Create</h4>
+                            <h4>套接字 - 创建</h4>
                         </header>
 
                         <h5>Firstly, some background</h5>
+                        <h5>一些背景信息</h5>
 
                         <p>Socket Programming in Linux is achieved through the use of the SYS_SOCKETCALL kernel function. The SYS_SOCKETCALL function is somewhat unique in that it encapsulates a number of different subroutines, all related to socket operations, within the one function. By passing different integer values in EBX we can change the behaviour of this function to create, listen, send, receive, close and more. <a href="https://gist.github.com/DGivney/7196bd7a9f21a12c9397bdcf9ae040d2" target="_blank">Click here</a> to view the full commented source code of the completed program.</p>
+                        <p>在Linux中，套接字编程是通过SYS_SOCKETCALL系统调用实现的。SYS_SOCKETCALL以一种独特的方式在一个函数之内实现了若干种关于套接字的操作子程序。通过向EBX传递不同的整数，我们可以调整它的行为，涵盖了创建、监听、发送、接收、关闭等等各种操作。<a href="https://gist.github.com/DGivney/7196bd7a9f21a12c9397bdcf9ae040d2">这个链接</a>指向了充分注释过的完整程序源代码。</p>
 
                         <h5>Writing our program</h5>
+                        <h5>写程序</h5>
 
                         <p>We begin the tutorial by first initalizing some of our registers which we will use later to store important values.  We will then create a socket using SYS_SOCKETCALL's first subroutine which is called 'socket'.  We will then build upon our program in each of the following socket programming lessons, adding code as we go. Eventually we will have a full program that can create, bind, listen, accept, read, write and close sockets.</p>
+                        <p>我们首先通过初始化一些之后用来储存重要数据的寄存器来开始这节教程。我们将会使用SYS_SOCKETCALL的第一个子程序，俗称'socket'，来创建一个套接字。接下来若干关于套接字的课程中，我们将不断在这个程序的基础上添加代码。最终我们能够得到一个涵盖了创建、绑定、监听、接受、读取、写入和关闭套接字的完整程序。</p>
 
                         <p>SYS_SOCKETCALL's subroutine 'socket' expects 2 arguments - a pointer to an array of arguments in ECX and the integer value 1 in EBX.  The SYS_SOCKETCALL opcode is then loaded into EAX and the kernel is called to create the socket. Because everything in linux is a file, we recieve back the <a href="https://en.wikipedia.org/wiki/File_descriptor" target="_blank">file descriptor</a> of the created socket in EAX. This file descriptor can then be used for performing other socket programming functions.</p>
+                        <p>SYS_SOCKETCALL的'socket'子程序需要两个参数，EBX传入整数1,ECX要传入一个参数的数组，将调用操作数传入EAX接着触发系统调用就能获取到套接字。在Linux中，一切都是文件（译者注：实际上这是Unix哲学的一部分），所以我们将在EAX得到新创建的套接字的文件描述符，这个文件描述符将用于接下来的其他套接字操作函数中。</p>
 
                         <p>
                             <span class="label label-info">Note:</span>
                             XORing a register by itself is an efficent way of ensuring the register is initalised with the integer value zero and doesn't contain an unexpected value that could corrupt your program.
+                        </p>
+                        <p>
+                            <span class="label label-info">注意:</span>
+                            将一个寄存器与其自身异或(XOR)是初始化该寄存器的值为0的高效途径，这可以确保寄存器不含有可能导致程序异常的值。
                         </p>
 
                         <div class="snippet">
@@ -3020,26 +3067,31 @@
 
                                 _start:
 
-                                    xor     eax, eax            ; init eax 0
-                                    xor     ebx, ebx            ; init ebx 0
-                                    xor     edi, edi            ; init edi 0
-                                    xor     esi, esi            ; init esi 0
+                                    xor     eax, eax            ; EAX置0
+                                    xor     ebx, ebx            ; EBX置0
+                                    xor     edi, edi            ; EDI置0
+                                    xor     esi, esi            ; ESI置0
 
                                 _socket:
 
                                     push    byte 6              ; push 6 onto the stack (IPPROTO_TCP)
+                                                                ; 将6 TCP协议 入栈
                                     push    byte 1              ; push 1 onto the stack (SOCK_STREAM)
+                                                                ; 将1 面向连接到TCP服务 入栈
                                     push    byte 2              ; push 2 onto the stack (PF_INET)
+                                                                ; 将2 协议族 入栈
                                     mov     ecx, esp            ; move address of arguments into ecx
+                                                                ; 将栈指针寄存器传入ECX，表示参数数组来自栈顶
                                     mov     ebx, 1              ; invoke subroutine SOCKET (1)
-                                    mov     eax, 102            ; invoke SYS_SOCKETCALL (kernel opcode 102)
-                                    int     80h                 ; call the kernel
+                                                                ; 使用‘socket’子程序(1)
+                                    mov     eax, 102            ; SYS_SOCKETCALL的系统调用操作数是102
+                                    int     80h                 ; 触发系统调用
 
-                                    call    iprintLF            ; call our integer printing function (print the file descriptor in EAX or -1 on error)
+                                    call    iprintLF            ; 调用整数输出函数，可以将套接字的文件描述符输出。如果报错，则是-1
 
                                 _exit:
 
-                                    call    quit                ; call our quit function
+                                    call    quit                ; 退出程序
                             </pre>
                             <div class="output">
                                 <div class="inner">
