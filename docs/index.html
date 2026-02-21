@@ -27,7 +27,7 @@
                 <span class="brand">NASM汇编教程 - asm.jamaccao.cn</span>
                 <div class="nav-collapse collapse">
                     <p class="navbar-text pull-right">
-                        <a class="navbar-link" href="#top">Top</a>
+                        <a class="navbar-link" href="#top">顶部</a>
                     </p>
                 </div>
             </div>
@@ -3215,8 +3215,10 @@
                         </header>
 
                         <p>In the previous lessons we created a socket and used the 'bind' subroutine to associate it with a local IP address and port.  In this lesson we will use the 'listen' subroutine of SYS_SOCKETCALL to tell our socket to listen for incoming TCP requests. This will allow us to read and write to anyone who connects to our socket.</p>
+                        <p>在先前的课程中，我们已经创建了一个套接字并且将其绑定到一个IP地址端口组合上。在本课程中，我们将使用监听子程序来使得我们的套接字监听穿入的TCP请求。这将使得我们能够通过读写来与连接到套接字的人通讯。</p>
 
                         <p>SYS_SOCKETCALL's subroutine 'listen' expects 2 arguments - a pointer to an array of arguments in ECX and the integer value 4 in EBX.  The SYS_SOCKETCALL opcode is then loaded into EAX and the kernel is called. If succesful the socket will begin listening for incoming requests.</p>
+                        <p>套接字系列系统调用的监听子程序需要两个参数，ECX是指向参数数组的指针，EBX是子程序编号4。和之前的一样，要将系统调用编号传入EAX接着触发系统调用。如果成功，那么套接字就开始监听传入的请求了。</p>
 
                         <div class="snippet">
                             <span class="filename">socket.asm</span>
@@ -3233,14 +3235,14 @@
 
                                 _start:
 
-                                    xor     eax, eax            ; initialize some registers
+                                    xor     eax, eax            ; 初始化寄存器
                                     xor     ebx, ebx
                                     xor     edi, edi
                                     xor     esi, esi
 
                                 _socket:
 
-                                    push    byte 6              ; create socket from lesson 29
+                                    push    byte 6              ; 创建套接字
                                     push    byte 1
                                     push    byte 2
                                     mov     ecx, esp
@@ -3250,7 +3252,7 @@
 
                                 _bind:
 
-                                    mov     edi, eax            ; bind socket from lesson 30
+                                    mov     edi, eax            ; 绑定套接字
                                     push    dword 0x00000000
                                     push    word 0x2923
                                     push    word 2
@@ -3266,15 +3268,19 @@
                                 _listen:
 
                                     push    byte 1              ; move 1 onto stack (max queue length argument)
+                                                                ; 最大队列长度为1
                                     push    edi                 ; push the file descriptor onto stack
+                                                                ; 套接字文件描述符
                                     mov     ecx, esp            ; move address of arguments into ecx
+                                                                ; 设置ECX为ESP，即栈上是参数数组
                                     mov     ebx, 4              ; invoke subroutine LISTEN (4)
+                                                                ; 子程序4,监听
                                     mov     eax, 102            ; invoke SYS_SOCKETCALL (kernel opcode 102)
                                     int     80h                 ; call the kernel
 
                                 _exit:
 
-                                    call    quit                ; call our quit function
+                                    call    quit                ; 调用退出函数
                             </pre>
                             <div class="output">
                                 <div class="inner">
@@ -3293,15 +3299,22 @@
                         <header>
                             <h2>Lesson 32</h2>
                             <h4>Sockets - Accept</h4>
+                            <h4>套接字 - 接受</h4>
                         </header>
 
                         <p>In the previous lessons we created a socket and used the 'bind' subroutine to associate it with a local IP address and port.  We then used the 'listen' subroutine of SYS_SOCKETCALL to tell our socket to listen for incoming TCP requests. Now we will use the 'accept' subroutine of SYS_SOCKETCALL to tell our socket to accept those incoming requests. Our socket will then be ready to read and write to remote connections.</p>
+                        <p>先前的课程我们已经创建并绑定套接字到IP地址和端口上，并且让我们的套接字监听传入的请求，现在我们将使用接受子程序来告诉我们的套接字接受传入的请求，从而使得我没登套接字能够准备读取或者写入远程连接。</p>
 
                         <p>SYS_SOCKETCALL's subroutine 'accept' expects 2 arguments - a pointer to an array of arguments in ECX and the integer value 5 in EBX.  The SYS_SOCKETCALL opcode is then loaded into EAX and the kernel is called. The 'accept' subroutine will create another file descriptor, this time identifying the incoming socket connection. We will use this file descriptor to read and write to the incoming connection in later lessons.</p>
+                        <p>接受子程序需要两个参数，ECX是参数数组指针，EBX是子程序编号5。 然后还是需要调用系统调用。接受子程序将会创建一个新的文件描述符，标识着传入的套接字连接，我们将在接下来的课程里面使用这个新的文件描述符读写传入的连接。</p>
 
                         <p>
                             <span class="label label-info">Note:</span>
                             Run the program and use the command <kbd>sudo netstat -plnt</kbd> in another terminal to view the socket listening on port 9001.
+                        </p>
+                        <p>
+                            <span class="label label-info">注意:</span>
+                            运行这个程序，然后在另一个终端窗口中使用命令 <kbd>sudo netstat -plnt</kbd> 以观测到9001端口上的套接字正在被监听。
                         </p>
 
                         <div class="snippet">
@@ -3319,14 +3332,14 @@
 
                                 _start:
 
-                                    xor     eax, eax            ; initialize some registers
+                                    xor     eax, eax            ; 初始化寄存器
                                     xor     ebx, ebx
                                     xor     edi, edi
                                     xor     esi, esi
 
                                 _socket:
 
-                                    push    byte 6              ; create socket from lesson 29
+                                    push    byte 6              ; 创建套接字
                                     push    byte 1
                                     push    byte 2
                                     mov     ecx, esp
@@ -3336,7 +3349,7 @@
 
                                 _bind:
 
-                                    mov     edi, eax            ; bind socket from lesson 30
+                                    mov     edi, eax            ; 绑定套接字
                                     push    dword 0x00000000
                                     push    word 0x2923
                                     push    word 2
@@ -3351,7 +3364,7 @@
 
                                 _listen:
 
-                                    push    byte 1              ; listen socket from lesson 31
+                                    push    byte 1              ; 监听套接字
                                     push    edi
                                     mov     ecx, esp
                                     mov     ebx, 4
@@ -3361,16 +3374,23 @@
                                 _accept:
 
                                     push    byte 0              ; push 0 dec onto stack (address length argument)
+                                                                ; 这个是客户端地址长度指针，NULL(0)表示不记录
                                     push    byte 0              ; push 0 dec onto stack (address argument)
+                                                                ; 这个是客户端地址指针，NULL表示不记录
+                                                                ; 译者按：如果这里存放了指针，那么可以接下来从这些指针指向位置获取客户端地址
                                     push    edi                 ; push the file descriptor onto stack
+                                                                ; 套接字文件描述符
                                     mov     ecx, esp            ; move address of arguments into ecx
+                                                                ; 现在栈上构成了参数数组，将栈顶指针作为指向参数数组的指针传入ECX
                                     mov     ebx, 5              ; invoke subroutine ACCEPT (5)
+                                                                ; 5号子程序接受套接字
                                     mov     eax, 102            ; invoke SYS_SOCKETCALL (kernel opcode 102)
+                                                                ; 触发系统调用
                                     int     80h                 ; call the kernel
 
                                 _exit:
 
-                                    call    quit                ; call our quit function
+                                    call    quit                ; 调用退出函数
 
                             </pre>
                             <div class="output">
@@ -3390,28 +3410,43 @@
                         <header>
                             <h2>Lesson 33</h2>
                             <h4>Sockets - Read</h4>
+                            <h4>套接字 - 读取</h4>
                         </header>
 
                         <p>When an incoming connection is accepted by our socket, a new file descriptor identifying the incoming socket connection is returned in EAX.  In this lesson we will use this file descriptor to read the incoming request headers from the connection.</p>
+                        <p>当传入的连接被我们的套接字接受后，一个与传入连接相关的新的文件描述符将作为返回值储存在EAX中。本节课总我们将使用这个文件描述符从传入连接中读取请求头。</p>
 
                         <p>We begin by storing the file descriptor we recieved in lesson 32 into ESI.  ESI was originally called the Source Index and is traditionally used in copy routines to store the location of a target file.</p>
+                        <p>我们储存这个文件描述符到ESI寄存器中，ESI寄存器最初表示的是源地址寄存器，传统意义上被用于复制例程中原始文件。</p>
 
                         <p>We will use the kernel function sys_read to read from the incoming socket connection.  As we have done in previous lessons, we will create a variable to store the contents being read from the file descriptor. Our socket will be using the HTTP protocol to communicate.  Parsing HTTP request headers to determine the length of the incoming message and accepted response formats is beyond the scope of this tutorial.  We will instead just read up to the first 255 bytes and print that to standardout.</p>
+                        <p>文件将使用SYS_READ系统调用来从传入的文件描述符中读取。就和先前课程里面的内容一样，我们首先创建一个变量来储存我们将从传入连接中读取的内容。我们的套接字将使用HTTP协议来通讯，解析HTTP请求头来决定传入信息长度和可接受的回复格式这些超出了本课程的范畴。（译者按：可以自行搜索HTTP请求头来了解有关内容）我们将读取前255字节并将其输出到标准输出中。</p>
 
                         <p>Once the incoming connection has been accepted, it is very common for webservers to spawn a child process to manage the read/write communication. The parent process is then free to return to the listening/accept state and accept any new incoming requests in parallel. We will implement this design pattern below using SYS_FORK and the JMP instruction prior to reading the request headers in the child process.</p>
+                        <p>一旦连接被接受后，一个对于网络服务器的常见做法是生成一个子进程来管理通讯信息的读写，而原来的进程将释放后转而继续监听接受套接字，并行地等待新的传入请求。我们也将会通过FORK系统调用和JMP命令在子进程中读取请求头来实现这个设计范式。（译者按：更为现代的做法是事件循环，感兴趣的读者可以自行了解）</p>
 
                         <p>To generate valid request headers we will use the commandline tool <kbd>curl</kbd> to connect to our listening socket. But you can also use a standard web browser to connect in the same way.</p>
+                        <p>为了生成有效的请求头，我们使用<kbd>curl</kbd>工具来连接我们在监听中的套接字，不过你也可以用标准的浏览器来连接。</p>
 
                         <p>sys_read expects 3 arguments - the number of bytes to read in EDX, the memory address of our variable in ECX and the <a href="https://en.wikipedia.org/wiki/File_descriptor" target="_blank">file descriptor</a> in EBX. The sys_read opcode is then loaded into EAX and the kernel is called to read the contents into our variable which is then printed to the screen.</p>
+                        <p>SYS_READ需要三个参数，分别是EDX中的读取字节数，ECX中储存变量缓冲区地址指针，EBX储存文件描述符，EAX是系统调用操作码；接着调用系统调用，这样变量缓冲区中就会储存我们接下来要输出到屏幕上的内容。</p>
 
                         <p>
                             <span class="label label-info">Note:</span>
                             We will reserve 255 bytes in the .bss section to store the contents being read from the file descriptor. <a href="#lesson9">See Lesson 9 for more information on the .bss section.</a>
                         </p>
+                        <p>
+                            <span class="label label-info">注意:</span>
+                            我们在bss段保留255字节来储存从套接字读取的内容。<a href="#lesson9">在第九课获取关于BSS端的介绍</a>
+                        </p>
 
                         <p>
                             <span class="label label-info">Note:</span>
                             Run the program and use the command <kbd>curl http://localhost:9001</kbd> in another terminal to view the request headers being read by our program.
+                        </p>
+                        <p>
+                            <span class="label label-info">注意:</span>
+                            运行这个程序，然后在另一个终端窗口中使用命令 <kbd>curl http://localhost:9001</kbd> ，接着就可以在我们的程序中查看请求头了。
                         </p>
 
                         <div class="snippet">
@@ -3425,21 +3460,21 @@
                                 %include    'functions.asm'
 
                                 SECTION .bss
-                                buffer resb 255,                ; variable to store request headers
+                                buffer resb 255,                ; 储存请求头的BSS段保留缓冲区变量
 
                                 SECTION .text
                                 global  _start
 
                                 _start:
 
-                                    xor     eax, eax            ; initialize some registers
+                                    xor     eax, eax            ; 初始化寄存器
                                     xor     ebx, ebx
                                     xor     edi, edi
                                     xor     esi, esi
 
                                 _socket:
 
-                                    push    byte 6              ; create socket from lesson 29
+                                    push    byte 6              ; 创建套接字
                                     push    byte 1
                                     push    byte 2
                                     mov     ecx, esp
@@ -3449,7 +3484,7 @@
 
                                 _bind:
 
-                                    mov     edi, eax            ; bind socket from lesson 30
+                                    mov     edi, eax            ; 绑定套接字
                                     push    dword 0x00000000
                                     push    word 0x2923
                                     push    word 2
@@ -3464,7 +3499,7 @@
 
                                 _listen:
 
-                                    push    byte 1              ; listen socket from lesson 31
+                                    push    byte 1              ; 监听套接字
                                     push    edi
                                     mov     ecx, esp
                                     mov     ebx, 4
@@ -3473,7 +3508,7 @@
 
                                 _accept:
 
-                                    push    byte 0              ; accept socket from lesson 32
+                                    push    byte 0              ; 接受套接字
                                     push    byte 0
                                     push    edi
                                     mov     ecx, esp
@@ -3484,28 +3519,39 @@
                                 _fork:
 
                                     mov     esi, eax            ; move return value of SYS_SOCKETCALL into esi (file descriptor for accepted socket, or -1 on error)
+                                                                ; 将套接字系列系统调用接受子程序的返回值传入套接字文件描述符存到ESI寄存器中
                                     mov     eax, 2              ; invoke SYS_FORK (kernel opcode 2)
+                                                                ; 调用EAX为2的系统调用，即FORK
                                     int     80h                 ; call the kernel
 
                                     cmp     eax, 0              ; if return value of SYS_FORK in eax is zero we are in the child process
+                                                                ; 如果FORK系统调用的返回值为0,说明目前处于子进程中
                                     jz      _read               ; jmp in child process to _read
+                                                                ; (Jmp if Zero)跳转到读取内容部分
 
                                     jmp     _accept             ; jmp in parent process to _accept
+                                                                ; 如果在原始进程中，就跳转回接受套接字部分，等待新的传入连接
 
                                 _read:
 
                                     mov     edx, 255            ; number of bytes to read (we will only read the first 255 bytes for simplicity)
+                                                                ; 要读取的字节数，出于简化需求，只读取首个255字节
                                     mov     ecx, buffer         ; move the memory address of our buffer variable into ecx
+                                                                ; 将我们在BSS段保留的255字节缓冲区地址传入ECX
                                     mov     ebx, esi            ; move esi into ebx (accepted socket file descriptor)
+                                                                ; 将接收到的传入连接套接字文件描述符入ESI，作为待读取的文件
                                     mov     eax, 3              ; invoke SYS_READ (kernel opcode 3)
+                                                                ; 触发SYS_READ系统调用
                                     int     80h                 ; call the kernel
 
                                     mov     eax, buffer         ; move the memory address of our buffer variable into eax for printing
+                                                                ; 将已经储存了传入内容的缓冲区地址传入EAX作为函数参数
                                     call    sprintLF            ; call our string printing function
+                                                                ; 调用之前写的输出函数(译者按：见第七课)
 
                                 _exit:
 
-                                    call    quit                ; call our quit function
+                                    call    quit                ; 调用退出函数
                             </pre>
                             <div class="output">
                                 <div class="inner">
@@ -3528,13 +3574,17 @@
                         <header>
                             <h2>Lesson 34</h2>
                             <h4>Sockets - Write</h4>
+                            <h4>套接字 - 写入</h4>
                         </header>
 
                         <p>When an incoming connection is accepted by our socket, a new file descriptor identifying the incoming socket connection is returned in EAX.  In this lesson we will use this file descriptor to send our response to the connection.</p>
+                        <p>当传入的连接被我们的套接字接受后，一个与传入连接相关的新的文件描述符将作为返回值储存在EAX中。本节课总我们将使用这个文件描述符从传入连接中读取请求头。在本课程中，我们将使用这个文件描述符向连接发送回复。</p>
 
                         <p>We will use the kernel function sys_write to write to the incoming socket connection. As our socket will be communicating using the HTTP protocol, we will need to send some compulsory headers in order to allow HTTP speaking clients to connect.  We will send these following the formatting rules set out in the <a href="https://tools.ietf.org/html/rfc2616?spm=5176.doc32013.2.3.Aimyd7#section-4.2" target="_blank">RFC Standard</a>.</p>
+                        <p>我们将使用sys_write来写入内容到传入的套接字连接中。因为我们的套接字使用HTTP协议通讯，我们需要发送一些必要的响应头以通过HTTP协议告诉客户端怎么连接。我们将参考<a href="https://tools.ietf.org/html/rfc2616?spm=5176.doc32013.2.3.Aimyd7#section-4.2" target="_blank">RFC 规范</a>来发送响应内容。</p>
 
                         <p>sys_write expects 3 arguments - the number of bytes to write in EDX, the response string to write in ECX and the <a href="https://en.wikipedia.org/wiki/File_descriptor" target="_blank">file descriptor</a> in EBX.  The sys_write opcode is then loaded into EAX and the kernel is called to send our response back through our socket to the incoming connection.</p>
+                        <p>SYS_WRITE需要传入三个参数，分别EBX存放文件描述符，ECX存放要写入的字符串，EDX是要写入的字节数。将SYS_WRITE的操作数写入EAX再调用系统调用，就能够将内容传输到套接字中，从而发送响应到传入的连接中。</p>
 
                         <p>
                             <span class="label label-info">Note:</span>
