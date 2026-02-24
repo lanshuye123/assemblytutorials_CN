@@ -3590,10 +3590,18 @@
                             <span class="label label-info">Note:</span>
                             We will create a variable in the .data section to store the response we will write to the file descriptor. <a href="#lesson1">See Lesson 1 for more information on the .data section.</a>
                         </p>
+                        <p>
+                            <span class="label label-info">注意:</span>
+                            我们将在data段创建一个变量以储存我们要向文件描述符写入的响应内容。<a href="#lesson1">参见第一课以了解data段的详情</a>
+                        </p>
 
                         <p>
                             <span class="label label-info">Note:</span>
                             Run the program and use the command <kbd>curl http://localhost:9001</kbd> in another terminal to view the response sent via our socket. Or connect to the same address using any standard web browser.
+                        </p>
+                        <p>
+                            <span class="label label-info">注意:</span>
+                            运行我们的程序，然后在另一个终端会话中运行<kbd>curl http://localhost:9001</kbd>或者通过标准浏览器访问这个地址以查看我们通过套接字发送的响应。
                         </p>
 
                         <div class="snippet">
@@ -3607,25 +3615,25 @@
                                 %include    'functions.asm'
 
                                 SECTION .data
-                                ; our response string
+                                ; 响应内容
                                 response db 'HTTP/1.1 200 OK', 0Dh, 0Ah, 'Content-Type: text/html', 0Dh, 0Ah, 'Content-Length: 14', 0Dh, 0Ah, 0Dh, 0Ah, 'Hello World!', 0Dh, 0Ah, 0h
 
                                 SECTION .bss
-                                buffer resb 255,                ; variable to store request headers
+                                buffer resb 255,                ; 请求头缓冲区
 
                                 SECTION .text
                                 global  _start
 
                                 _start:
 
-                                    xor     eax, eax            ; initialize some registers
+                                    xor     eax, eax            ; 初始化寄存器
                                     xor     ebx, ebx
                                     xor     edi, edi
                                     xor     esi, esi
 
                                 _socket:
 
-                                    push    byte 6              ; create socket from lesson 29
+                                    push    byte 6              ; 创建套接字
                                     push    byte 1
                                     push    byte 2
                                     mov     ecx, esp
@@ -3635,7 +3643,7 @@
 
                                 _bind:
 
-                                    mov     edi, eax            ; bind socket from lesson 30
+                                    mov     edi, eax            ; 绑定套接字
                                     push    dword 0x00000000
                                     push    word 0x2923
                                     push    word 2
@@ -3650,7 +3658,7 @@
 
                                 _listen:
 
-                                    push    byte 1              ; listen socket from lesson 31
+                                    push    byte 1              ; 监听套接字
                                     push    edi
                                     mov     ecx, esp
                                     mov     ebx, 4
@@ -3659,7 +3667,7 @@
 
                                 _accept:
 
-                                    push    byte 0              ; accept socket from lesson 32
+                                    push    byte 0              ; 接受套接字
                                     push    byte 0
                                     push    edi
                                     mov     ecx, esp
@@ -3669,7 +3677,7 @@
 
                                 _fork:
 
-                                    mov     esi, eax            ; fork socket from lesson 33
+                                    mov     esi, eax            ; fork子线程
                                     mov     eax, 2
                                     int     80h
 
@@ -3680,7 +3688,7 @@
 
                                 _read:
 
-                                    mov     edx, 255            ; read socket from lesson 33
+                                    mov     edx, 255            ; 读取收到的内容
                                     mov     ecx, buffer
                                     mov     ebx, esi
                                     mov     eax, 3
@@ -3692,14 +3700,18 @@
                                 _write:
 
                                     mov     edx, 78             ; move 78 dec into edx (length in bytes to write)
+                                                                ; 将要写入的字节数传入EDX
                                     mov     ecx, response       ; move address of our response variable into ecx
+                                                                ; 将响应内容传入ECX
                                     mov     ebx, esi            ; move file descriptor into ebx (accepted socket id)
+                                                                ; 将要写入的位置（套接字）传入EBX
                                     mov     eax, 4              ; invoke SYS_WRITE (kernel opcode 4)
+                                                                ; 触发SYS_WRITE系统调用
                                     int     80h                 ; call the kernel
 
                                 _exit:
 
-                                    call    quit                ; call our quit function
+                                    call    quit                ; 调用退出函数
                             </pre>
                             <div class="output">
                                 <div class="inner">
@@ -3728,15 +3740,22 @@
                         <header>
                             <h2>Lesson 35</h2>
                             <h4>Sockets - Close</h4>
+                            <h4>套接字 - 关闭</h4>
                         </header>
 
                         <p>In this lesson we will use sys_close to properly close the active socket connection in the child process after our response has been sent. This will free up some resources that can be used to accept new incoming connections.</p>
+                        <p>在本课程中，我们将使用SYS_CLOSE函数以在响应发送完成后恰当地关闭子线程中的活跃套接字连接。这将会释放一些资源以待新的连接使用。</p>
 
                         <p>sys_close expects 1 argument - the <a href="https://en.wikipedia.org/wiki/File_descriptor" target="_blank">file descriptor</a> in EBX. The sys_close opcode is then loaded into EAX and the kernel is called to close the socket and remove the active file descriptor.</p>
+                        <p>SYS_CLOSE只需要向EBX传入要关闭的文件的文件描述符即可。SYS_CLOSE操作数加载到EAX后触发系统调用，套接字就可以恰当地被关闭，活跃的文件描述符也随之移除。</p>
 
                         <p>
                             <span class="label label-info">Note:</span>
                             Run the program and use the command <kbd>curl http://localhost:9001</kbd> in another terminal or connect to the same address using any standard web browser.
+                        </p>
+                        <p>
+                            <span class="label label-info">注意:</span>
+                            运行这个程序，然后在另一个终端窗口中使用命令<kbd>curl http://localhost:9001</kbd>或者通过标准浏览器访问这个地址以查看我们通过套接字发送的响应。
                         </p>
 
                         <div class="snippet">
@@ -3750,25 +3769,25 @@
                                 %include    'functions.asm'
 
                                 SECTION .data
-                                ; our response string
+                                ; 响应内容
                                 response db 'HTTP/1.1 200 OK', 0Dh, 0Ah, 'Content-Type: text/html', 0Dh, 0Ah, 'Content-Length: 14', 0Dh, 0Ah, 0Dh, 0Ah, 'Hello World!', 0Dh, 0Ah, 0h
 
                                 SECTION .bss
-                                buffer resb 255,                ; variable to store request headers
+                                buffer resb 255,                ; 请求头缓冲区
 
                                 SECTION .text
                                 global  _start
 
                                 _start:
 
-                                    xor     eax, eax            ; initialize some registers
+                                    xor     eax, eax            ; 初始化寄存器
                                     xor     ebx, ebx
                                     xor     edi, edi
                                     xor     esi, esi
 
                                 _socket:
 
-                                    push    byte 6              ; create socket from lesson 29
+                                    push    byte 6              ; 创建套接字
                                     push    byte 1
                                     push    byte 2
                                     mov     ecx, esp
@@ -3778,7 +3797,7 @@
 
                                 _bind:
 
-                                    mov     edi, eax            ; bind socket from lesson 30
+                                    mov     edi, eax            ; 绑定套接字
                                     push    dword 0x00000000
                                     push    word 0x2923
                                     push    word 2
@@ -3793,7 +3812,7 @@
 
                                 _listen:
 
-                                    push    byte 1              ; listen socket from lesson 31
+                                    push    byte 1              ; 监听套接字
                                     push    edi
                                     mov     ecx, esp
                                     mov     ebx, 4
@@ -3802,7 +3821,7 @@
 
                                 _accept:
 
-                                    push    byte 0              ; accept socket from lesson 32
+                                    push    byte 0              ; 接受套接字
                                     push    byte 0
                                     push    edi
                                     mov     ecx, esp
@@ -3812,7 +3831,7 @@
 
                                 _fork:
 
-                                    mov     esi, eax            ; fork socket from lesson 33
+                                    mov     esi, eax            ; fork子线程
                                     mov     eax, 2
                                     int     80h
 
@@ -3823,7 +3842,7 @@
 
                                 _read:
 
-                                    mov     edx, 255            ; read socket from lesson 33
+                                    mov     edx, 255            ; 读取收到的内容
                                     mov     ecx, buffer
                                     mov     ebx, esi
                                     mov     eax, 3
@@ -3834,7 +3853,7 @@
 
                                 _write:
 
-                                    mov     edx, 78             ; write socket from lesson 34
+                                    mov     edx, 78             ; 写入响应到远程
                                     mov     ecx, response
                                     mov     ebx, esi
                                     mov     eax, 4
@@ -3842,13 +3861,13 @@
 
                                 _close:
 
-                                    mov     ebx, esi            ; move esi into ebx (accepted socket file descriptor)
-                                    mov     eax, 6              ; invoke SYS_CLOSE (kernel opcode 6)
-                                    int     80h                 ; call the kernel
+                                    mov     ebx, esi            ; 将要关闭的套接字文件描述符传入EBX
+                                    mov     eax, 6              ; SYS_CLOSE的操作数是6
+                                    int     80h                 ; 触发系统调用
 
                                 _exit:
 
-                                    call    quit                ; call our quit function
+                                    call    quit                ; 调用退出函数
                             </pre>
                             <div class="output">
                                 <div class="inner">
@@ -3873,6 +3892,10 @@
                             <span class="label label-info">Note:</span>
                             We have properly closed the socket connections and removed their active file descriptors.
                         </p>
+                        <p>
+                            <span class="label label-info">注意:</span>
+                            我们已经恰当地关闭了套接字连接并且移除了活跃的文件描述符。
+                        </p>
 
                     </article>
                 </div>
@@ -3882,9 +3905,11 @@
                         <header>
                             <h2>Lesson 36</h2>
                             <h4>Download a Webpage</h4>
+                            <h4>下载一个网页</h4>
                         </header>
 
                         <p>In the previous lessons we have been learning how to use the many subroutines of the SYS_SOCKETCALL kernel function to create, manage and transfer data through Linux sockets. We will continue that theme in this lesson by using the 'connect' subroutine of SYS_SOCKETCALL to connect to a remote webserver and download a webpage.</p>
+                        <p>在先前的课程中，我们已经学会了如何利用SYS_SOCKETCALL套接字系列系统调用的若干子程序来创建、管理套接字以及通过其来传输数据。在本课程中，我们将使用套接字系列的连接子程序去访问远程服务器并下载一个网页。</p>
 
                         <p>These are the steps we need to follow to connect a socket to a remote server:
                             <ul>
@@ -3895,10 +3920,21 @@
                             </ul>
                             We will then use our string printing function to print the response to our terminal.
                         </p>
+                        <p>以下是使用套接字连接远程服务器需要做的事情：
+                            <ul>
+                                <li> 调用套接字系列子程序的'套接字'(socket)来创建一个活跃的套接字连接以发送请求。</li>
+                                <li> 调用连接(connect)子程序来连接远程服务器。</li>
+                                <li> 使用SYS_WRITE以通过连接到远程服务器的套接字发送HTTP格式的请求。</li>
+                                <li> 使用SYS_READ以接受服务器以HTTP格式返回的响应。</li>
+                            </ul>
+                            我们将使用一开始的那个字符串输出函数来将服务器响应输出到终端会话中。
+                        </p>
 
                         <h5>What is a HTTP Request</h5>
+                        <h5>什么是HTTP请求</h5>
 
                         <p>The HTTP specification has evolved through a number of standard versions including <a href="https://tools.ietf.org/html/rfc1945" target="_blank">1.0 in RFC1945</a>, <a href="https://tools.ietf.org/html/rfc2068" target="_blank">1.1 in RFC2068</a> and <a href="https://tools.ietf.org/html/rfc7540" target="_blank">2.0 in RFC7540</a>.  Version 1.1 is still the most common today.</p>
+                        <p>HTTP协议已经经过了多个版本的迭代，包括1.0(RFC1945)、1.1(RFC2068)和2.0(RFC7540)，现在最常用的还是HTTP/1.1</p>
 
                         <p>A HTTP/1.1 request is comprised of 3 sections:
                             <ol>
@@ -3907,26 +3943,41 @@
                                 <li> An <i>empty line</i> that tells the remote server you have finished sending the request and you will begin waiting for the response.</li>
                             </ol>
                         </p>
+                        <p>HTTP 1.1 请求由以下三部分构成:
+                            <ol>
+                                <li> 一行内容，包括HTTP方法（GET、POST、PUT、DELETE）、请求路径和HTTP协议版本</li>
+                                <li> 一系列可选的<i><a href="https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers">请求标头</a></i></li>
+                                <li> 空行(一般是\n)以告诉服务器请求头发完了，可以开始响应了。</li>
+                            </ol>
+                        </p>
 
                         <p>A typical HTTP request for the root document on this server would look like this:</p>
+                        <p>典型的一个访问服务器根目录的HTTP请求如下</p>
 
                         <div class="snippet">
                             <pre class="brush: asm;">
-                                GET / HTTP/1.1                  ; A line containing the request method, url and version
-                                Host: asmtutor.com              ; A section of request headers
-                                                                ; A required empty line
+                                GET / HTTP/1.1                  ; 方法、路径和版本
+                                Host: asmtutor.com              ; 请求头部分
+                                                                ; 空行
                             </pre>
                         </div>
 
                         <h5>Writing our program</h5>
+                        <h5>写程序</h5>
 
                         <p>This tutorial starts out like the previous ones by calling SYS_SOCKETCALL's subroutine 'socket' to initially create our socket.  However, instead of calling 'bind' on this socket we will call 'connect' with an IP Address and Port Number to connect our socket to a remote webserver. We will then use the SYS_WRITE and SYS_READ kernel methods to transfer data between the two sockets by sending a HTTP request and reading the HTTP response.</p>
+                        <p>本课程和之前的课程一样，使用socket子程序来创建套接字，但是这次不绑定，而直接对着确定的IP地址和端口号使用connect子程序来让我们的套接字连接到远程的服务器。我们将使用SYS_WRITE和SYS_READ这两个系统调用来在两个套接字间发送HTTP请求并读取响应。</p>
 
                         <p>SYS_SOCKETCALL's subroutine 'connect' expects 2 arguments - a pointer to an array of arguments in ECX and the integer value 3 in EBX.  The SYS_SOCKETCALL opcode is then loaded into EAX and the kernel is called to connect to the socket.</p>
+                        <p>connect子程序需要两个参数，ECX是参数数组指针，EBX是子程序编号3.和前面一样，通过将系统调用编号写入EAX并触发系统调用以调用connect子程序。</p>
 
                         <p>
                             <span class="label label-info">Note:</span>
                             In Linux we can use the following command <kbd>./crawler > index.html</kbd> to save the output of our program to a file instead.
+                        </p>
+                        <p>
+                            <span class="label label-info">Note:</span>
+                            在Linux系统中，我们可以使用 <kbd>./crawler > index.html</kbd> 来将终端上的输出重定向到一个文件中。
                         </p>
 
                         <div class="snippet">
@@ -3940,78 +3991,113 @@
                                 %include    'functions.asm'
 
                                 SECTION .data
-                                ; our request string
+                                ; 请求头部分
                                 request db 'GET / HTTP/1.1', 0Dh, 0Ah, 'Host: 139.162.39.66:80', 0Dh, 0Ah, 0Dh, 0Ah, 0h
 
                                 SECTION .bss
-                                buffer resb 1,                  ; variable to store response
+                                buffer resb 1,                  ; 储存响应的缓冲区
 
                                 SECTION .text
                                 global  _start
 
                                 _start:
 
-                                    xor     eax, eax            ; init eax 0
-                                    xor     ebx, ebx            ; init ebx 0
-                                    xor     edi, edi            ; init edi 0
+                                    xor     eax, eax            ; 初始化寄存器
+                                    xor     ebx, ebx
+                                    xor     edi, edi
 
                                 _socket:
 
-                                    push    byte 6              ; push 6 onto the stack (IPPROTO_TCP)
-                                    push    byte 1              ; push 1 onto the stack (SOCK_STREAM)
-                                    push    byte 2              ; push 2 onto the stack (PF_INET)
-                                    mov     ecx, esp            ; move address of arguments into ecx
-                                    mov     ebx, 1              ; invoke subroutine SOCKET (1)
-                                    mov     eax, 102            ; invoke SYS_SOCKETCALL (kernel opcode 102)
-                                    int     80h                 ; call the kernel
+                                    push    byte 6              ; (IPPROTO_TCP = 6)
+                                                                ; TCP协议
+                                    push    byte 1              ; (SOCK_STREAM = 1)
+                                                                ; 流式传输
+                                    push    byte 2              ; (PF_INET = 2)
+                                                                ; 构造一个协议族
+                                                                ; 译者按: 栈是先进后出的，所以我们后将要构造一个协议族(Protocol family)入栈
+                                                                ; 现在栈上是(协议族 - 流式传输 - TCP)
+                                    mov     ecx, esp            ; 参数数组在栈上
+                                    mov     ebx, 1              ; 子程序编号SOCKET = 1
+                                    mov     eax, 102            ; OPCODE(SYS_SOCKETCALL) = 102
+                                    int     80h                 ; 触发系统调用
 
                                 _connect:
 
                                     mov     edi, eax            ; move return value of SYS_SOCKETCALL into edi (file descriptor for new socket, or -1 on error)
+                                                                ; 将创建的套接字文件描述符移入edi
                                     push    dword 0x4227a28b    ; push 139.162.39.66 onto the stack IP ADDRESS (reverse byte order)
+                                                                ; 以字节反序的方式传入要访问的16进制IP地址
                                     push    word 0x5000         ; push 80 onto stack PORT (reverse byte order)
+                                                                ; 将十六进制的80端口以字节反序方式入栈
                                     push    word 2              ; push 2 dec onto stack AF_INET
+                                                                ; 现在在构造一个地址族(Address Family)
+                                                                ; 译者按：(地址族 - 端口 - IP)
                                     mov     ecx, esp            ; move address of stack pointer into ecx
+                                                                ; 套接字地址结构体在栈上
                                     push    byte 16             ; push 16 dec onto stack (arguments length)
+                                                                ; 套接字地址结构体的长度为16
                                     push    ecx                 ; push the address of arguments onto stack
+                                                                ; 套接字地址结构体地址入栈
                                     push    edi                 ; push the file descriptor onto stack
+                                                                ; 目前套接字的地址
+                                                                ; 译者按: 传入子程序的参数数组如下:
+                                                                ; 套接字地址, 地址结构体长度, 地址结构体（地址族 - 端口 - IP）
                                     mov     ecx, esp            ; move address of arguments into ecx
+                                                                ; 将参数数组传入ECX
                                     mov     ebx, 3              ; invoke subroutine CONNECT (3)
+                                                                ; CONNECT子程序的编号是3
                                     mov     eax, 102            ; invoke SYS_SOCKETCALL (kernel opcode 102)
+                                                                ; 触发系统调用
                                     int     80h                 ; call the kernel
 
                                 _write:
 
                                     mov     edx, 43             ; move 43 dec into edx (length in bytes to write)
+                                                                ; 要写入（发送）的字节数，即HTTP请求长度
                                     mov     ecx, request        ; move address of our request variable into ecx
+                                                                ; 要写入（发送）的内容，即HTTP请求
                                     mov     ebx, edi            ; move file descriptor into ebx (created socket file descriptor)
+                                                                ; 将写入目标的文件描述符（套接字）传入EBX
                                     mov     eax, 4              ; invoke SYS_WRITE (kernel opcode 4)
+                                                                ; 触发系统调用
                                     int     80h                 ; call the kernel
 
                                 _read:
 
                                     mov     edx, 1              ; number of bytes to read (we will read 1 byte at a time)
+                                                                ; 要读取的字节数，本课程中一次读1byte
                                     mov     ecx, buffer         ; move the memory address of our buffer variable into ecx
+                                                                ; 将读取到的内容传入我们在bss段分配的缓冲区
                                     mov     ebx, edi            ; move edi into ebx (created socket file descriptor)
+                                                                ; 从EDI中储存的文件描述符（套接字）中读取，即我们使用的套接字连接
                                     mov     eax, 3              ; invoke SYS_READ (kernel opcode 3)
+                                                                ; 触发系统调用
                                     int     80h                 ; call the kernel
 
                                     cmp     eax, 0              ; if return value of SYS_READ in eax is zero, we have reached the end of the file
+                                                                ; 如果返回值是0,说明读取到了末尾
                                     jz      _close              ; jmp to _close if we have reached the end of the file (zero flag set)
+                                                                ; (Jump if Zero)跳转到结束部分
 
+                                                                ; 如果没有读取完
                                     mov     eax, buffer         ; move the memory address of our buffer variable into eax for printing
+                                                                ; 将缓冲区地址送入EAX(译者按：我们一开始那个输出函数会输出EAX中储存的指针指向的内容)
                                     call    sprint              ; call our string printing function
+                                                                ; 调用不换行的输出函数
                                     jmp     _read               ; jmp to _read
+                                                                ; 继续读取
 
                                 _close:
 
                                     mov     ebx, edi            ; move edi into ebx (connected socket file descriptor)
+                                                                ; 将要关闭的文件描述符传入EBX
                                     mov     eax, 6              ; invoke SYS_CLOSE (kernel opcode 6)
+                                                                ; 触发系统调用
                                     int     80h                 ; call the kernel
 
                                 _exit:
 
-                                    call    quit                ; call our quit function
+                                    call    quit                ; 调用退出函数
                             </pre>
                             <div class="output">
                                 <div class="inner">
